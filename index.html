@@ -1,20 +1,277 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html class="light" lang="ja">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World Site</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>SparkDo - Login</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Material Symbols -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet">
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+    rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet">
+  <!-- Tailwind Config -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-fixed-variant": "#4c463b",
+            "tertiary": "#586062",
+            "primary-container": "#ff8c00",
+            "surface-container-lowest": "#ffffff",
+            "inverse-primary": "#ffb77d",
+            "on-surface-variant": "#564334",
+            "surface-variant": "#e1e3e4",
+            "outline-variant": "#ddc1ae",
+            "inverse-on-surface": "#f0f1f2",
+            "on-error-container": "#93000a",
+            "on-error": "#ffffff",
+            "surface-bright": "#f8f9fa",
+            "on-primary-fixed-variant": "#6e3900",
+            "on-secondary": "#ffffff",
+            "on-primary-container": "#623200",
+            "on-tertiary-fixed-variant": "#41484a",
+            "secondary": "#645e52",
+            "primary": "#904d00",
+            "tertiary-fixed-dim": "#c1c8ca",
+            "outline": "#897362",
+            "secondary-container": "#e8ded0",
+            "tertiary-fixed": "#dde4e6",
+            "surface-tint": "#904d00",
+            "inverse-surface": "#2e3132",
+            "on-secondary-container": "#686256",
+            "background": "#f8f9fa",
+            "on-secondary-fixed": "#1f1b12",
+            "error": "#ba1a1a",
+            "secondary-fixed-dim": "#cec5b7",
+            "secondary-fixed": "#ebe1d3",
+            "error-container": "#ffdad6",
+            "primary-fixed-dim": "#ffb77d",
+            "on-tertiary": "#ffffff",
+            "surface-container-low": "#f3f4f5",
+            "on-surface": "#191c1d",
+            "surface-container-high": "#e7e8e9",
+            "surface-container": "#edeeef",
+            "on-tertiary-fixed": "#161d1f",
+            "on-primary": "#ffffff",
+            "on-background": "#191c1d",
+            "surface-dim": "#d9dadb",
+            "tertiary-container": "#a4abad",
+            "on-tertiary-container": "#394042",
+            "surface-container-highest": "#e1e3e4",
+            "surface": "#f8f9fa",
+            "on-primary-fixed": "#2f1500",
+            "primary-fixed": "#ffdcc3"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "md": "24px",
+            "lg": "48px",
+            "xs": "4px",
+            "base": "8px",
+            "gutter": "24px",
+            "sm": "12px",
+            "container-max": "1120px",
+            "xl": "80px"
+          },
+          "fontFamily": {
+            "display": [
+              "Plus Jakarta Sans"
+            ],
+            "body-md": [
+              "Plus Jakarta Sans"
+            ],
+            "label-sm": [
+              "Plus Jakarta Sans"
+            ],
+            "headline-lg-mobile": [
+              "Plus Jakarta Sans"
+            ],
+            "body-lg": [
+              "Plus Jakarta Sans"
+            ],
+            "label-bold": [
+              "Plus Jakarta Sans"
+            ],
+            "headline-lg": [
+              "Plus Jakarta Sans"
+            ],
+            "headline-md": [
+              "Plus Jakarta Sans"
+            ]
+          },
+          "fontSize": {
+            "display": [
+              "48px",
+              {
+                "lineHeight": "56px",
+                "letterSpacing": "-0.02em",
+                "fontWeight": "800"
+              }
+            ],
+            "body-md": [
+              "16px",
+              {
+                "lineHeight": "24px",
+                "fontWeight": "400"
+              }
+            ],
+            "label-sm": [
+              "12px",
+              {
+                "lineHeight": "16px",
+                "fontWeight": "500"
+              }
+            ],
+            "headline-lg-mobile": [
+              "24px",
+              {
+                "lineHeight": "32px",
+                "fontWeight": "700"
+              }
+            ],
+            "body-lg": [
+              "18px",
+              {
+                "lineHeight": "28px",
+                "fontWeight": "400"
+              }
+            ],
+            "label-bold": [
+              "14px",
+              {
+                "lineHeight": "20px",
+                "fontWeight": "700"
+              }
+            ],
+            "headline-lg": [
+              "32px",
+              {
+                "lineHeight": "40px",
+                "letterSpacing": "-0.01em",
+                "fontWeight": "700"
+              }
+            ],
+            "headline-md": [
+              "24px",
+              {
+                "lineHeight": "32px",
+                "fontWeight": "600"
+              }
+            ]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
 </head>
 
-<body>
-  <div class="container">
-    <h1 id="greeting">Hello World!</h1>
-    <button id="btn">文字を変える</button>
+<body class="bg-surface-container-low min-h-screen flex items-center justify-center p-4 relative overflow-y-auto overflow-x-hidden">
+  <!-- Ambient Background Layer -->
+  <div class="absolute inset-0 z-0 bg-cover bg-center opacity-40 mix-blend-multiply blur-xl"
+    data-alt="A very soft, abstract gradient background featuring warm tones of pale orange, off-white, and light tan. The composition should be minimal, airy, and optimistic, creating a serene environment that enhances productivity without distracting from foreground elements. Soft volumetric lighting, light mode aesthetic, high key photography style."
+    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDQX_RjuHXcjie-ikVFtGORplnwqAJDBIDaXxC8eakNBmZAGT0XWWB8UyT31EaPTUfGKNqwLR0QV63sCn_hRO9mlgrgWqqTGgxcFtesol-ZCvnb4GPNLwk-B6XNP0xjVRtu5_-FGq2FHsAmyz6I8djXGLsrR2jc7MugeevF39MaFNi62XRdQ4biqxZGJORvA7S7DaLU1RsmUjVOFikSWC30RBJNo-DieGryeBoHHIqapxeOsfL99Sm9')">
   </div>
+  <!-- Auth Card Container -->
+  <main class="w-full max-w-[440px] relative z-10">
+    <!-- Main Card -->
+    <div class="bg-surface rounded-xl shadow-[0_4px_20px_0_rgba(0,0,0,0.04)] p-8 md:p-10 w-full flex flex-col gap-6">
+      <!-- Header Section -->
+      <div class="text-center mb-2">
+        <h1 class="font-display text-display text-primary tracking-tight mb-2">SparkDo</h1>
+      </div>
+      <!-- Form Section -->
+      <form class="flex flex-col gap-5">
+        <!-- Email Input -->
+        <div class="flex flex-col gap-2">
+          <label class="font-label-bold text-label-bold text-on-surface" for="email">メールアドレス</label>
+          <input
+            class="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-4 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all shadow-sm"
+            id="email" placeholder="you@example.com" required="" type="email">
+        </div>
+        <!-- Password Input -->
+        <div class="flex flex-col gap-2">
+          <div class="flex justify-between items-center">
+            <label class="font-label-bold text-label-bold text-on-surface" for="password">パスワード</label>
 
-  <script src="script.js"></script>
+          </div>
+          <div class="relative">
+            <input
+              class="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-4 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all shadow-sm"
+              id="password" placeholder="••••••••" required="" type="password">
+          </div>
+          <div class="text-right mt-2"><a
+              class="font-label-sm text-label-sm text-primary hover:text-primary-container transition-colors"
+              href="#">パスワードをお忘れですか？</a></div>
+        </div>
+        <!-- Login Button -->
+        <button
+          class="w-full bg-primary-container text-on-primary-container font-label-bold text-label-bold py-3.5 rounded-lg shadow-sm hover:scale-[1.02] hover:shadow-md transition-all duration-200 mt-2 flex items-center justify-center gap-2 group"
+          type="submit">
+          <span class="">ワークスペースにログイン</span>
+          <span
+            class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+      </form>
+      <!-- Divider -->
+      <div class="flex items-center gap-4 my-2">
+        <div class="flex-grow border-t border-surface-variant"></div>
+        <span class="font-label-sm text-label-sm text-outline">または次でログイン</span>
+        <div class="flex-grow border-t border-surface-variant"></div>
+      </div>
+      <!-- Social Login -->
+      <button
+        class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-label-bold text-label-bold py-3.5 rounded-lg shadow-sm hover:bg-surface-container-low transition-colors flex items-center justify-center gap-3"
+        type="button">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            fill="#4285F4"></path>
+          <path
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            fill="#34A853"></path>
+          <path
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+            fill="#FBBC05"></path>
+          <path
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            fill="#EA4335"></path>
+        </svg>
+        <span class="">Googleでサインイン</span>
+      </button>
+    </div>
+    <!-- Footer / Create Account -->
+    <div class="mt-8 text-center">
+      <p class="font-body-lg text-body-lg text-on-surface-variant">
+        SparkDoは初めてですか？
+        <a class="font-bold text-primary hover:text-primary-container transition-colors ml-1"
+          href="#">アカウントを作成</a>
+      </p>
+    </div>
+  </main>
+
+  <script type="module" src="index.js"></script>
 </body>
 
 </html>
