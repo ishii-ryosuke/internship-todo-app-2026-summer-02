@@ -2,7 +2,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// 【ダミー値】Firebaseプロジェクトの設定
 const firebaseConfig = {
     apiKey: "AIzaSyDlXQYEzZaExLLQmp1zcfBLfg8WmFCAlLU",
     authDomain: "one-week-68c87.firebaseapp.com",
@@ -105,7 +104,7 @@ form.addEventListener('submit', async (e) => {
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        window.location.href = '/dashboard.html';
+        window.location.href = '/main.html';
     } catch (error) {
         console.error('Email Login Error:', error);
         const msg = getErrorMessage(error);
@@ -123,7 +122,7 @@ googleBtn.addEventListener('click', async () => {
 
     try {
         await signInWithPopup(auth, googleProvider);
-        window.location.href = '/dashboard.html';
+        window.location.href = '/main.html';
     } catch (error) {
         console.error('Google Login Error:', error);
         const msg = getErrorMessage(error);
