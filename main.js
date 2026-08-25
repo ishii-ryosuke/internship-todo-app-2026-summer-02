@@ -26,3 +26,43 @@ if (closeNavBtn) {
 if (navOverlay) {
     navOverlay.addEventListener('click', closeNav);
 }
+
+// Logout Modal Logic
+const logoutBtn = document.getElementById('logout-btn');
+const logoutModal = document.getElementById('logout-modal');
+const logoutOverlay = document.getElementById('logout-overlay');
+const logoutConfirmBtn = document.getElementById('logout-confirm-btn');
+const logoutCancelBtn = document.getElementById('logout-cancel-btn');
+
+function openLogoutModal() {
+    if (logoutModal) {
+        logoutModal.classList.remove('hidden');
+    }
+}
+
+function closeLogoutModal() {
+    if (logoutModal) {
+        logoutModal.classList.add('hidden');
+    }
+}
+
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', openLogoutModal);
+}
+if (logoutCancelBtn) {
+    logoutCancelBtn.addEventListener('click', closeLogoutModal);
+}
+if (logoutOverlay) {
+    logoutOverlay.addEventListener('click', closeLogoutModal);
+}
+if (logoutConfirmBtn) {
+    logoutConfirmBtn.addEventListener('click', () => {
+        window.location.href = 'index.html';
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && logoutModal && !logoutModal.classList.contains('hidden')) {
+        closeLogoutModal();
+    }
+});
