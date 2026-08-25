@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html class="light" lang="en" style="">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>SparkDo - Main To Do List</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#4c463b",
+                        "tertiary": "#586062",
+                        "primary-container": "#ff8c00",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#ffb77d",
+                        "on-surface-variant": "#564334",
+                        "surface-variant": "#e1e3e4",
+                        "outline-variant": "#ddc1ae",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f8f9fa",
+                        "on-primary-fixed-variant": "#6e3900",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#623200",
+                        "on-tertiary-fixed-variant": "#41484a",
+                        "secondary": "#645e52",
+                        "primary": "#904d00",
+                        "tertiary-fixed-dim": "#c1c8ca",
+                        "outline": "#897362",
+                        "secondary-container": "#e8ded0",
+                        "tertiary-fixed": "#dde4e6",
+                        "surface-tint": "#904d00",
+                        "inverse-surface": "#2e3132",
+                        "on-secondary-container": "#686256",
+                        "background": "#f8f9fa",
+                        "on-secondary-fixed": "#1f1b12",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#cec5b7",
+                        "secondary-fixed": "#ebe1d3",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#ffb77d",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "on-surface": "#191c1d",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-container": "#edeeef",
+                        "on-tertiary-fixed": "#161d1f",
+                        "on-primary": "#ffffff",
+                        "on-background": "#191c1d",
+                        "surface-dim": "#d9dadb",
+                        "tertiary-container": "#a4abad",
+                        "on-tertiary-container": "#394042",
+                        "surface-container-highest": "#e1e3e4",
+                        "surface": "#f8f9fa",
+                        "on-primary-fixed": "#2f1500",
+                        "primary-fixed": "#ffdcc3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "lg": "48px",
+                        "xs": "4px",
+                        "base": "8px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "container-max": "1120px",
+                        "xl": "80px"
+                    },
+                    "fontFamily": {
+                        "display": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "label-bold": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        .task-card-shadow {
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        input[type="checkbox"] {
+            appearance: none;
+            background-color: transparent;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ff8c00;
+            border-radius: 50%;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        input[type="checkbox"]::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em white;
+            background-color: white;
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: #ff8c00;
+            border-color: #ff8c00;
+        }
+
+        input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
+    </style>
+</head>
+
+<body class="bg-[#FFF5E6] text-on-background min-h-screen flex flex-col relative overflow-x-hidden">
+    <!-- TopAppBar -->
+    <header class="bg-surface dark:bg-background docked full-width top-0 shadow-sm z-40 relative">
+        <div class="flex justify-between items-center px-gutter w-full h-16 max-w-container-max mx-auto">
+            <div class="w-10"></div> <!-- Spacer for center alignment -->
+            <div class="flex flex-col items-center">
+                <span
+                    class="font-display text-headline-md text-primary dark:text-primary-fixed-dim tracking-tight">SparkDo</span>
+
+            </div>
+            <button
+                class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity p-2 rounded-full hover:bg-surface-container"
+                id="profile-btn">
+                <span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+            </button>
+        </div>
+    </header>
+    <!-- SideNavBar (Hidden by default, overlays from right) -->
+    <div class="fixed inset-y-0 right-0 w-64 bg-surface-container-low dark:bg-inverse-surface shadow-xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col h-full p-md translate-x-full"
+        id="side-nav">
+        <div class="flex justify-between items-center mb-lg mt-12">
+            <div class="flex items-center gap-sm">
+                <img class="w-12 h-12 rounded-full object-cover"
+                    data-alt="A stylized, modern geometric avatar illustration of a user named Alex Spark. Vibrant orange and warm grey tones. Clean vector art style. Light mode aesthetic."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7_r6YX1WfdUC2xigB5b2bzSYMg4K-ZxZvfrMBu1xrg2yhjs9u4IBINLoCLfLM6vN0NlH0LQTFwY4cYUzfGgaZ3f8y8iNZppi1AGmUIr0V-MWIVzkBhCz9pZxu0Qlj54mPYI5Zrhi9f5BLZUd7gBKqBkL7Pz5fmiOIxOzO9BnbRcAURMJiPolklaskjjWYyYKYe4FOFd03HKkUusH_kaWN3gO2gDtKbHqCVIPGFkIGa9_yX8JZi658">
+                <div>
+                    <h3 class="font-headline-md text-body-md text-on-surface">Alex Spark</h3>
+
+                </div>
+            </div>
+            <button class="text-on-surface-variant hover:bg-surface-variant p-2 rounded-full transition-colors"
+                id="close-nav">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <nav class="flex-grow space-y-sm"><a
+                class="flex items-center gap-sm text-on-surface-variant dark:text-surface-variant hover:bg-secondary-container dark:hover:bg-secondary transition-colors rounded-lg font-label-bold px-4 py-3"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="description">description</span>
+                下書き
+            </a>
+            <a class="flex items-center gap-sm text-on-surface-variant dark:text-surface-variant hover:bg-secondary-container dark:hover:bg-secondary transition-colors rounded-lg font-label-bold px-4 py-3"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="delete">delete</span>
+                ゴミ箱
+            </a>
+            <a class="flex items-center gap-sm text-on-surface-variant dark:text-surface-variant hover:bg-secondary-container dark:hover:bg-secondary transition-colors rounded-lg font-label-bold px-4 py-3"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="settings">settings</span>
+                設定
+            </a>
+        </nav>
+        <div class="mt-auto">
+            <a class="flex items-center gap-sm text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors rounded-lg font-label-bold px-4 py-3"
+                href="logout_screen.html">
+                <span class="material-symbols-outlined" data-icon="logout">logout</span>
+                ログアウト
+            </a>
+        </div>
+    </div>
+    <!-- Overlay for SideNav -->
+    <div class="fixed inset-0 bg-black/20 z-40 backdrop-blur-sm transition-opacity hidden" id="nav-overlay"></div>
+    <!-- Main Content Canvas -->
+    <main
+        class="flex-grow w-full max-w-container-max mx-auto px-4 md:px-xl py-lg md:py-xl flex flex-col gap-md relative">
+        <!-- Welcome / Status area -->
+        <section class="flex justify-between items-end mb-lg">
+            <div>
+                <h1
+                    class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-1">
+                    おはようございます、Alexさん！</h1>
+                <p class="font-body-md text-body-md text-tertiary">今日のリストを達成しましょう。</p>
+            </div>
+        </section>
+        <!-- Task List Bento Grid Area -->
+        <section class="grid grid-cols-1 md:grid-cols-12 gap-md"><!-- Incomplete Tasks Column -->
+            <div class="md:col-span-6 flex flex-col gap-sm">
+                <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2">
+                    未完了のタスク</h2>
+                <!-- High Priority Task (Red/Rose) -->
+                <article
+                    class="bg-[#FFF0F0] rounded-lg p-4 flex items-start gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-error hover:scale-[1.02] cursor-pointer">
+                    <div class="pt-1">
+                        <span class="material-symbols-outlined text-tertiary">crown</span>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex items-center gap-2 mb-1">
+                            <label
+                                class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
+                                for="task-high">第3四半期マーケティングプレゼンの仕上げ</label>
+                        </div>
+                        <p class="font-label-sm text-label-sm text-tertiary mt-1">午後2時のミーティング前に、Sarahとスライド12-15を確認する。
+                        </p>
+                        <div class="flex gap-2 mt-3">
+                            <span
+                                class="px-2 py-1 bg-error-container text-on-error-container font-label-sm text-[10px] rounded-full uppercase tracking-wider">高優先度</span>
+                        </div>
+                    </div>
+                    <button
+                        class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </article>
+                <!-- Medium Priority Task (Yellow/Amber) -->
+                <article
+                    class="bg-[#FFF9E6] rounded-lg p-4 flex items-start gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-primary-container hover:scale-[1.02] cursor-pointer">
+                    <div class="pt-1">
+                        <span class="material-symbols-outlined text-tertiary">crown</span>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex items-center gap-2 mb-1">
+                            <label
+                                class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
+                                for="task-med">デンバーサミットの航空券予約</label>
+                        </div>
+                        <p class="font-label-sm text-label-sm text-tertiary mt-1">デルタ航空とサウスウエスト航空の午前便をチェックする。</p>
+                        <div class="flex gap-2 mt-3">
+                            <span
+                                class="px-2 py-1 bg-primary-container text-on-primary-container font-label-sm text-[10px] rounded-full uppercase tracking-wider">中優先度</span>
+                        </div>
+                    </div>
+                    <button
+                        class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </article>
+                <!-- Low Priority Task (Green) -->
+                <article
+                    class="bg-[#F0FFF4] rounded-lg p-4 flex items-start gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer">
+                    <div class="pt-1">
+                        <span class="material-symbols-outlined text-tertiary">crown</span>
+                    </div>
+                    <div class="flex-grow">
+                        <div class="flex items-center gap-2 mb-1">
+                            <label
+                                class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
+                                for="task-low">チームランチの場所予約</label>
+                        </div>
+                        <p class="font-label-sm text-label-sm text-tertiary mt-1">金曜日の親睦会のために、近くのイタリアンレストランを予約する。</p>
+                        <div class="flex gap-2 mt-3">
+                            <span
+                                class="px-2 py-1 bg-secondary-container text-on-secondary-container font-label-sm text-[10px] rounded-full uppercase tracking-wider">低優先度</span>
+                        </div>
+                    </div>
+                    <button
+                        class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </article>
+            </div>
+            <!-- Completed Tasks Column -->
+            <div class="md:col-span-6 flex flex-col gap-sm">
+                <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2">完了済み
+                </h2>
+                <!-- Task Card 3 (Completed) -->
+                <article class="bg-surface-container rounded-lg p-4 flex items-start gap-4 opacity-75">
+                    <div class="pt-1">
+                        <span class="material-symbols-outlined text-error icon-fill">crown</span>
+                    </div>
+                    <div class="flex-grow">
+                        <label
+                            class="font-body-lg text-body-lg text-tertiary font-semibold line-through">週次アップデートメールの送信</label>
+                    </div>
+                    <button
+                        class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </article>
+            </div>
+        </section>
+        <!-- Persistent FAB for Mobile (and Desktop fallback) -->
+        <button
+            class="fixed bottom-24 md:bottom-8 right-6 md:right-xl w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 hover:bg-surface-tint transition-transform duration-200 z-30">
+            <span class="material-symbols-outlined" data-icon="add">add</span>
+        </button>
+    </main>
+    <!-- BottomNavBar (Mobile Only) -->
+    <nav
+        class="bg-surface dark:bg-inverse-surface docked full-width bottom-0 rounded-t-xl shadow-[0_-4px_20px_0_rgba(0,0,0,0.04)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe md:hidden">
+        <a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-110 transition-transform duration-200"
+            href="#">
+            <span class="material-symbols-outlined icon-fill" data-icon="list_alt">list_alt</span>
+            <span class="font-label-sm text-label-sm mt-1">Tasks</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+            <span class="font-label-sm text-label-sm mt-1">Progress</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="timer">timer</span>
+            <span class="font-label-sm text-label-sm mt-1">Focus</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-colors"
+            href="#">
+            <span class="material-symbols-outlined" data-icon="person">person</span>
+            <span class="font-label-sm text-label-sm mt-1">Profile</span>
+        </a>
+    </nav>
+    <script>
+        // Simple Sidebar Toggle Logic
+        const profileBtn = document.getElementById('profile-btn');
+        const closeNavBtn = document.getElementById('close-nav');
+        const sideNav = document.getElementById('side-nav');
+        const navOverlay = document.getElementById('nav-overlay');
+
+        function openNav() {
+            sideNav.classList.remove('translate-x-full');
+            navOverlay.classList.remove('hidden');
+            // small delay to allow display block to apply before fading in
+            setTimeout(() => navOverlay.classList.add('opacity-100'), 10);
+        }
+
+        function closeNav() {
+            sideNav.classList.add('translate-x-full');
+            navOverlay.classList.remove('opacity-100');
+            setTimeout(() => navOverlay.classList.add('hidden'), 300); // wait for transition
+        }
+
+        profileBtn.addEventListener('click', openNav);
+        closeNavBtn.addEventListener('click', closeNav);
+        navOverlay.addEventListener('click', closeNav);
+    </script>
+
+
+
+
+
+
+</body>
+
+</html>
