@@ -161,21 +161,19 @@
     </style>
 </head>
 
-<body class="bg-[#FFF5E6] text-on-background min-h-screen flex flex-col relative overflow-x-hidden">
+<body class="text-on-background min-h-screen flex flex-col relative overflow-x-hidden"
+    style="background: radial-gradient(circle at 15% 25%, rgba(255, 140, 0, 0.15) 0%, transparent 50%), radial-gradient(circle at 85% 75%, rgba(255, 140, 0, 0.12) 0%, transparent 60%), rgb(248, 249, 250);">
     <!-- TopAppBar -->
     <header class="bg-surface dark:bg-background docked full-width top-0 shadow-sm z-40 relative">
-        <div class="flex justify-between items-center px-gutter w-full h-16 max-w-container-max mx-auto">
-            <div class="w-10"></div> <!-- Spacer for center alignment -->
-            <div class="flex flex-col items-center">
+        <div class="grid grid-cols-12 items-center px-gutter w-full h-16 max-w-container-max mx-auto">
+            <div class="col-span-12 flex justify-center relative h-full items-center">
                 <span
-                    class="font-display text-headline-md text-primary dark:text-primary-fixed-dim tracking-tight">SparkDo</span>
-
+                    class="font-display text-headline-lg-mobile md:text-headline-lg text-primary dark:text-primary-fixed-dim tracking-tight">SparkDo</span>
+                <button
+                    class="absolute right-0 text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity p-2 rounded-full hover:bg-surface-container md:text-headline-lg"
+                    id="profile-btn"><img alt="Alex Spark" class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover"
+                        src="https://lh3.googleusercontent.com/aida/AEtjO1VCYMQbCkme1KRmxG1SyLnqrGp1Hyt9LlL4TW4Rpwpq9_4HoKrKJd5zcVTIBQnMRTNFgXRhx2B6HBhgPu56J_ThrYF5XOLqPF9fm4RVinV7AMOKFz7gM-wfmvFNSZ-rWn0GurPd2myRyWCwNEuffZt87XtngzBcYeNMm_ZgnsKI2KqJcYi9377QX0dy8zOw8ff3XcIl6_Esm3294CgsjNuUzVjqfE3i3eMWv0aC5SvpFX1tTh14nZOy7X0"></button>
             </div>
-            <button
-                class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity p-2 rounded-full hover:bg-surface-container"
-                id="profile-btn">
-                <span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
-            </button>
         </div>
     </header>
     <!-- SideNavBar (Hidden by default, overlays from right) -->
@@ -188,7 +186,6 @@
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7_r6YX1WfdUC2xigB5b2bzSYMg4K-ZxZvfrMBu1xrg2yhjs9u4IBINLoCLfLM6vN0NlH0LQTFwY4cYUzfGgaZ3f8y8iNZppi1AGmUIr0V-MWIVzkBhCz9pZxu0Qlj54mPYI5Zrhi9f5BLZUd7gBKqBkL7Pz5fmiOIxOzO9BnbRcAURMJiPolklaskjjWYyYKYe4FOFd03HKkUusH_kaWN3gO2gDtKbHqCVIPGFkIGa9_yX8JZi658">
                 <div>
                     <h3 class="font-headline-md text-body-md text-on-surface">Alex Spark</h3>
-
                 </div>
             </div>
             <button class="text-on-surface-variant hover:bg-surface-variant p-2 rounded-full transition-colors"
@@ -229,10 +226,8 @@
         <!-- Welcome / Status area -->
         <section class="flex justify-between items-end mb-lg">
             <div>
-                <h1
-                    class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-1">
-                    おはようございます、Alexさん！</h1>
-                <p class="font-body-md text-body-md text-tertiary">今日のリストを達成しましょう。</p>
+                <h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-1"
+                    id="encouragement-message"></h1>
             </div>
         </section>
         <!-- Task List Bento Grid Area -->
@@ -252,11 +247,7 @@
                                 class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
                                 for="task-high">第3四半期マーケティングプレゼンの仕上げ</label>
                         </div>
-                        <p class="font-label-sm text-label-sm text-tertiary mt-1">午後2時のミーティング前に、Sarahとスライド12-15を確認する。
-                        </p>
                         <div class="flex gap-2 mt-3">
-                            <span
-                                class="px-2 py-1 bg-error-container text-on-error-container font-label-sm text-[10px] rounded-full uppercase tracking-wider">高優先度</span>
                         </div>
                     </div>
                     <button
@@ -276,10 +267,7 @@
                                 class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
                                 for="task-med">デンバーサミットの航空券予約</label>
                         </div>
-                        <p class="font-label-sm text-label-sm text-tertiary mt-1">デルタ航空とサウスウエスト航空の午前便をチェックする。</p>
                         <div class="flex gap-2 mt-3">
-                            <span
-                                class="px-2 py-1 bg-primary-container text-on-primary-container font-label-sm text-[10px] rounded-full uppercase tracking-wider">中優先度</span>
                         </div>
                     </div>
                     <button
@@ -299,10 +287,7 @@
                                 class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
                                 for="task-low">チームランチの場所予約</label>
                         </div>
-                        <p class="font-label-sm text-label-sm text-tertiary mt-1">金曜日の親睦会のために、近くのイタリアンレストランを予約する。</p>
                         <div class="flex gap-2 mt-3">
-                            <span
-                                class="px-2 py-1 bg-secondary-container text-on-secondary-container font-label-sm text-[10px] rounded-full uppercase tracking-wider">低優先度</span>
                         </div>
                     </div>
                     <button
@@ -326,7 +311,6 @@
                     </div>
                     <button
                         class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
-                        <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </article>
             </div>
@@ -361,13 +345,26 @@
             <span class="font-label-sm text-label-sm mt-1">Profile</span>
         </a>
     </nav>
+
+    <script>
+        // 5つのランダム文章
+        const encouragementMessages = [
+            "小さな1歩が、大きな変化をつくります。今日もスタートしよう！",
+            "未来の自分が感謝する『今日』にしよう。",
+            "準備はOK？リストを1つずつクリアしていきましょう！",
+            "完璧を目指さなくて大丈夫。まずは目の前の1つから！",
+            "今日の挑戦が、あなたの力になる。素晴らしい1日を！"
+        ];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const messageEl = document.getElementById('encouragement-message');
+            if (messageEl) {
+                const randomIndex = Math.floor(Math.random() * encouragementMessages.length);
+                messageEl.textContent = encouragementMessages[randomIndex];
+            }
+        });
+    </script>
     <script src="main.js"></script>
-
-
-
-
-
-
 </body>
 
 </html>
