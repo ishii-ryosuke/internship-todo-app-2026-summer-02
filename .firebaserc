@@ -1,5 +1,7 @@
 {
-  "projects": {
-    "default": "one-week-68c87"
+  "projects": {   
+    "team-a": "teamame",
+    "team-b": "todo-dcf61",
+    "team-c": "one-week-68c87"
   }
 }
