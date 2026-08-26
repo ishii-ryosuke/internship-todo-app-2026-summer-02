@@ -122,42 +122,6 @@
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.04);
         }
 
-        input[type="checkbox"] {
-            appearance: none;
-            background-color: transparent;
-            margin: 0;
-            font: inherit;
-            color: currentColor;
-            width: 24px;
-            height: 24px;
-            border: 2px solid #ff8c00;
-            border-radius: 50%;
-            display: grid;
-            place-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-
-        input[type="checkbox"]::before {
-            content: "";
-            width: 12px;
-            height: 12px;
-            transform: scale(0);
-            transition: 120ms transform ease-in-out;
-            box-shadow: inset 1em 1em white;
-            background-color: white;
-            transform-origin: center;
-            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-        }
-
-        input[type="checkbox"]:checked {
-            background-color: #ff8c00;
-            border-color: #ff8c00;
-        }
-
-        input[type="checkbox"]:checked::before {
-            transform: scale(1);
-        }
 
         .bg-pattern {
             background-image: radial-gradient(#ffb77d 1px, transparent 1px);
@@ -256,61 +220,40 @@
                     未完了のタスク</h2>
                 <!-- High Priority Task (Red/Rose) -->
                 <article
-                    class="bg-[#FFF0F0] rounded-lg p-4 flex items-start gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-error hover:scale-[1.02] cursor-pointer">
-                    <div class="pt-1">
-                        <span class="material-symbols-outlined text-tertiary">crown</span>
+                    class="bg-[#FFF0F0] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden hover:opacity-90 transition-colors border-l-4 border-l-error hover:scale-[1.02] cursor-pointer task-card">
+                    <div>
+                        <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
                     </div>
                     <div class="flex-grow">
-                        <div class="flex items-center gap-2 mb-1">
-                            <label
-                                class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
-                                for="task-high">第3四半期マーケティングプレゼンの仕上げ</label>
-                        </div>
-                        <div class="flex gap-2 mt-3">
-                        </div>
+                        <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title">第3四半期マーケティングプレゼンの仕上げ</span>
                     </div>
-                    <button
-                        class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                    <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
                         <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </article>
                 <!-- Medium Priority Task (Yellow/Amber) -->
                 <article
-                    class="bg-[#FFF9E6] rounded-lg p-4 flex items-start gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-primary-container hover:scale-[1.02] cursor-pointer">
-                    <div class="pt-1">
-                        <span class="material-symbols-outlined text-tertiary">crown</span>
+                    class="bg-[#FFF9E6] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden hover:opacity-90 transition-colors border-l-4 border-l-primary-container hover:scale-[1.02] cursor-pointer task-card">
+                    <div>
+                        <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
                     </div>
                     <div class="flex-grow">
-                        <div class="flex items-center gap-2 mb-1">
-                            <label
-                                class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
-                                for="task-med">デンバーサミットの航空券予約</label>
-                        </div>
-                        <div class="flex gap-2 mt-3">
-                        </div>
+                        <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title">デンバーサミットの航空券予約</span>
                     </div>
-                    <button
-                        class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                    <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
                         <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </article>
                 <!-- Low Priority Task (Green) -->
                 <article
-                    class="bg-[#F0FFF4] rounded-lg p-4 flex items-start gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer">
-                    <div class="pt-1">
-                        <span class="material-symbols-outlined text-tertiary">crown</span>
+                    class="bg-[#F0FFF4] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer task-card">
+                    <div>
+                        <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
                     </div>
                     <div class="flex-grow">
-                        <div class="flex items-center gap-2 mb-1">
-                            <label
-                                class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary"
-                                for="task-low">チームランチの場所予約</label>
-                        </div>
-                        <div class="flex gap-2 mt-3">
-                        </div>
+                        <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title">チームランチの場所予約</span>
                     </div>
-                    <button
-                        class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                    <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
                         <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </article>
@@ -320,16 +263,15 @@
                 <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2">完了済み
                 </h2>
                 <!-- Task Card 3 (Completed) -->
-                <article class="bg-surface-container rounded-lg p-4 flex items-start gap-4 opacity-75">
-                    <div class="pt-1">
-                        <span class="material-symbols-outlined text-error icon-fill">crown</span>
+                <article class="bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed">
+                    <div>
+                        <span class="material-symbols-outlined text-error icon-fill task-icon">crown</span>
                     </div>
                     <div class="flex-grow">
-                        <label
-                            class="font-body-lg text-body-lg text-tertiary font-semibold line-through">週次アップデートメールの送信</label>
+                        <span class="font-body-lg text-body-lg text-tertiary font-semibold line-through block task-title">週次アップデートメールの送信</span>
                     </div>
-                    <button
-                        class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                    <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
+                        <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </article>
             </div>

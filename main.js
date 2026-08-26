@@ -122,23 +122,16 @@ if (taskListContainer) {
             const data = doc.data();
             
             const article = document.createElement('article');
-            article.className = "dynamic-task bg-[#F0FFF4] rounded-lg p-4 flex items-start gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer fade-in-up";
+            article.className = "dynamic-task bg-[#F0FFF4] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer fade-in-up";
             
             article.innerHTML = `
-                <div class="pt-1">
-                    <span class="material-symbols-outlined text-tertiary">task_alt</span>
+                <div>
+                    <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
                 </div>
                 <div class="flex-grow">
-                    <div class="flex items-center gap-2 mb-1">
-                        <label class="font-body-lg text-body-lg text-on-surface font-semibold cursor-pointer block group-has-[:checked]:line-through group-has-[:checked]:text-tertiary">
-                            ${data.name}
-                        </label>
-                    </div>
-                    <div class="flex gap-2 mt-3">
-                        <span class="text-sm text-on-surface-variant">${data.content}</span>
-                    </div>
+                    <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title">${data.name}</span>
                 </div>
-                <button class="self-center ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors">
+                <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
                     <span class="material-symbols-outlined">more_vert</span>
                 </button>
             `;
@@ -152,5 +145,29 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         if (logoutModal && !logoutModal.classList.contains('hidden')) closeLogoutModal();
         if (newTaskModal && !newTaskModal.classList.contains('hidden')) closeNewTaskModal();
+    }
+});
+
+// Event Delegation for Task Completion Toggle (Crown icon)
+document.addEventListener('click', (e) => {
+    const crownIcon = e.target.closest('.task-icon');
+    if (crownIcon && crownIcon.textContent.trim() === 'crown') {
+        const article = crownIcon.closest('article');
+        if (article) {
+            article.classList.toggle('completed');
+            
+            // Toggle icon classes
+            crownIcon.classList.toggle('icon-fill');
+            crownIcon.classList.toggle('text-error');
+            crownIcon.classList.toggle('text-tertiary');
+            
+            // Toggle title classes
+            const title = article.querySelector('.task-title');
+            if (title) {
+                title.classList.toggle('line-through');
+                title.classList.toggle('text-tertiary');
+                title.classList.toggle('text-on-surface');
+            }
+        }
     }
 });
