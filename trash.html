@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>SparkDo - ゴミ箱</title>
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Tailwind Configuration -->
@@ -91,14 +95,14 @@
                         "body-md": ["Plus Jakarta Sans"]
                     },
                     "fontSize": {
-                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
-                        "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
-                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
-                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
-                        "label-bold": ["14px", {"lineHeight": "20px", "fontWeight": "700"}],
-                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
                     }
                 }
             }
@@ -108,21 +112,24 @@
         .custom-checkbox-fill {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        input:checked + div .custom-checkbox-fill,
-        .custom-checkbox-container input:checked ~ .custom-checkbox-fill {
+
+        input:checked+div .custom-checkbox-fill,
+        .custom-checkbox-container input:checked~.custom-checkbox-fill {
             background-color: #904d00;
             border-color: #904d00;
         }
-        input:checked + div span,
-        .custom-checkbox-container input:checked ~ .custom-checkbox-fill span {
+
+        input:checked+div span,
+        .custom-checkbox-container input:checked~.custom-checkbox-fill span {
             opacity: 1;
             transform: scale(1);
         }
-        
+
         .select-all-active {
             background-color: #904d00 !important;
             border-color: #904d00 !important;
         }
+
         .select-all-active span {
             opacity: 1 !important;
             transform: scale(1) !important;
@@ -141,6 +148,7 @@
                 opacity: 0;
                 transform: translateY(12px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -148,16 +156,20 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-background to-secondary-container min-h-screen text-on-background font-body-md antialiased flex flex-col">
+
+<body
+    class="bg-gradient-to-br from-background to-secondary-container min-h-screen text-on-background font-body-md antialiased flex flex-col">
     <!-- TopAppBar -->
     <header class="bg-surface dark:bg-background shadow-sm docked full-width top-0 sticky z-50">
         <div class="flex justify-between items-center px-gutter w-full h-16 max-w-container-max mx-auto">
             <div class="flex items-center gap-sm">
                 <!-- Back Button for sub-page -->
-                <a href="main.html" aria-label="戻る" class="p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant flex items-center justify-center">
+                <a href="main.html" aria-label="戻る"
+                    class="p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant flex items-center justify-center">
                     <span class="material-symbols-outlined text-[24px]">arrow_back</span>
                 </a>
-                <span class="font-display text-[20px] font-bold text-primary dark:text-primary-fixed-dim tracking-tight">SparkDo</span>
+                <span
+                    class="font-display text-[20px] font-bold text-primary dark:text-primary-fixed-dim tracking-tight">SparkDo</span>
             </div>
         </div>
     </header>
@@ -170,27 +182,36 @@
                 <span class="material-symbols-outlined text-[32px] text-tertiary">delete</span>
                 <h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background">ゴミ箱</h1>
             </div>
-            <p class="font-body-md text-body-md text-on-surface-variant">削除されたタスクの一覧です。ここから復元または完全に消去できます。</p>
+            <p class="font-body-md text-body-md text-on-surface-variant">
+                削除されたタスクの一覧です。ここから復元または完全に消去できます。ゴミ箱内のタスクは30日後に自動的に削除されます。</p>
         </section>
 
+
         <!-- Bulk Actions Sub-header (Sticky) -->
-        <section class="bg-surface/80 backdrop-blur-md rounded-xl shadow-[0_4px_20px_0_rgba(0,0,0,0.04)] p-sm md:p-md flex items-center justify-between sticky top-[80px] z-40 border border-outline-variant/30">
+        <section
+            class="bg-surface/80 backdrop-blur-md rounded-xl shadow-[0_4px_20px_0_rgba(0,0,0,0.04)] p-sm md:p-md flex items-center justify-between sticky top-[80px] z-40 border border-outline-variant/30">
             <!-- Select All Checkbox -->
             <label class="flex items-center gap-sm cursor-pointer group select-none">
                 <input class="sr-only" id="selectAllCheckbox" type="checkbox">
-                <div class="relative w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center group-hover:border-primary transition-colors custom-checkbox-fill" id="selectAllVisual">
-                    <span class="material-symbols-outlined text-on-primary text-[16px] opacity-0 scale-50 transition-all duration-200" style="font-variation-settings: &quot;wght&quot; 600;">check</span>
+                <div class="relative w-6 h-6 rounded-full border-2 border-outline-variant flex items-center justify-center group-hover:border-primary transition-colors custom-checkbox-fill"
+                    id="selectAllVisual">
+                    <span
+                        class="material-symbols-outlined text-on-primary text-[16px] opacity-0 scale-50 transition-all duration-200"
+                        style="font-variation-settings: &quot;wght&quot; 600;">check</span>
                 </div>
                 <span class="font-label-bold text-label-bold text-on-surface" id="selectAllLabel">全選択</span>
             </label>
 
             <!-- Action Buttons (Hidden/Disabled by default) -->
-            <div class="flex gap-sm transition-all duration-300 opacity-50 pointer-events-none translate-y-1" id="bulkActionsPanel">
-                <button id="bulkRestoreBtn" type="button" class="px-4 py-2 rounded-lg border-2 border-primary text-primary font-label-bold text-label-bold hover:bg-primary-fixed/30 active:scale-95 transition-all flex items-center gap-xs">
+            <div class="flex gap-sm transition-all duration-300 opacity-50 pointer-events-none translate-y-1"
+                id="bulkActionsPanel">
+                <button id="bulkRestoreBtn" type="button"
+                    class="px-4 py-2 rounded-lg border-2 border-primary text-primary font-label-bold text-label-bold hover:bg-primary-fixed/30 active:scale-95 transition-all flex items-center gap-xs">
                     <span class="material-symbols-outlined text-[18px]">restore</span>
                     <span class="hidden md:inline">復元</span>
                 </button>
-                <button id="bulkDeleteBtn" type="button" class="px-4 py-2 rounded-lg bg-error text-on-error font-label-bold text-label-bold hover:bg-error/90 active:scale-95 transition-all shadow-sm flex items-center gap-xs">
+                <button id="bulkDeleteBtn" type="button"
+                    class="px-4 py-2 rounded-lg bg-error text-on-error font-label-bold text-label-bold hover:bg-error/90 active:scale-95 transition-all shadow-sm flex items-center gap-xs">
                     <span class="material-symbols-outlined text-[18px]">delete_forever</span>
                     <span class="hidden md:inline">完全削除</span>
                 </button>
@@ -207,30 +228,36 @@
     </main>
 
     <!-- Permanent Delete Confirmation Modal -->
-    <div id="delete-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <div id="delete-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden" role="dialog"
+        aria-modal="true" aria-labelledby="delete-modal-title">
         <!-- Backdrop Overlay -->
         <div id="delete-modal-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"></div>
 
         <!-- Modal Dialog Content -->
         <div class="relative z-10 w-full max-w-md px-gutter mx-4">
-            <div class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-2xl text-center fade-in-up border border-surface-variant/50">
-                <div class="w-14 h-14 mx-auto rounded-full bg-error-container text-error flex items-center justify-center mb-4">
+            <div
+                class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-2xl text-center fade-in-up border border-surface-variant/50">
+                <div
+                    class="w-14 h-14 mx-auto rounded-full bg-error-container text-error flex items-center justify-center mb-4">
                     <span class="material-symbols-outlined text-[32px]">delete_forever</span>
                 </div>
-                
-                <h2 id="delete-modal-title" class="font-headline-md text-on-surface font-bold text-xl md:text-2xl tracking-tight mb-2">
+
+                <h2 id="delete-modal-title"
+                    class="font-headline-md text-on-surface font-bold text-xl md:text-2xl tracking-tight mb-2">
                     完全に削除しますか？
                 </h2>
-                
+
                 <p id="delete-modal-message" class="text-on-surface-variant font-body-md text-sm md:text-base mb-6">
                     この操作を実行するとデータは復元できなくなります。
                 </p>
 
                 <div class="flex flex-col-reverse sm:flex-row gap-3">
-                    <button id="delete-modal-cancel-btn" type="button" class="w-full py-3 px-5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-bold transition-all duration-200">
+                    <button id="delete-modal-cancel-btn" type="button"
+                        class="w-full py-3 px-5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label-bold transition-all duration-200">
                         キャンセル
                     </button>
-                    <button id="delete-modal-confirm-btn" type="button" class="w-full py-3 px-5 rounded-full bg-error hover:bg-error/90 text-on-error font-label-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2">
+                    <button id="delete-modal-confirm-btn" type="button"
+                        class="w-full py-3 px-5 rounded-full bg-error hover:bg-error/90 text-on-error font-label-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">delete_forever</span>
                         削除
                     </button>
@@ -242,4 +269,5 @@
     <!-- Firebase Script Integration -->
     <script type="module" src="trash.js"></script>
 </body>
+
 </html>

@@ -188,6 +188,30 @@ onSnapshot(trashQuery, (snapshot) => {
         const data = taskDoc.data();
         const docId = taskDoc.id;
 
+        // Auto-delete logic (30 days)
+        let remainingDays = 30; // default if deletedAt is not available
+        let isExpired = false;
+
+        if (data.deletedAt) {
+            const deletedTime = data.deletedAt.toDate ? data.deletedAt.toDate().getTime() : new Date(data.deletedAt).getTime();
+            const now = Date.now();
+            const diffMs = now - deletedTime;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            remainingDays = 30 - diffDays;
+            if (remainingDays <= 0) {
+                isExpired = true;
+            }
+        }
+
+        if (isExpired) {
+            // フロントエンド側での自動完全削除
+            deleteDoc(doc(db, "task", docId)).catch(err => console.error("Auto delete failed", err));
+            return; // 画面には表示しない
+        }
+
+        const remainingText = remainingDays > 0 ? `残り${remainingDays}日` : "本日中に削除";
+
         const card = document.createElement('article');
         card.className = "bg-surface-container-lowest rounded-xl p-4 md:p-5 flex items-start gap-4 task-card-shadow border border-outline-variant/30 hover:border-outline-variant transition-all fade-in-up group";
         card.dataset.id = docId;
@@ -205,6 +229,14 @@ onSnapshot(trashQuery, (snapshot) => {
             <div class="flex-grow min-w-0">
                 <h3 class="font-body-lg text-body-lg text-on-surface font-semibold break-words">${escapeHtml(data.name || '無題のタスク')}</h3>
                 ${data.content ? `<p class="text-sm text-on-surface-variant mt-1 break-words">${escapeHtml(data.content)}</p>` : ''}
+            </div>
+            
+            <!-- Remaining days -->
+            <div class="flex-shrink-0 text-right self-center">
+                <span class="inline-flex items-center gap-1 text-xs font-label-sm px-2 py-1 bg-surface-variant text-on-surface-variant rounded-md shadow-sm">
+                    <span class="material-symbols-outlined text-[14px]">schedule</span>
+                    ${remainingText}
+                </span>
             </div>
         `;
 
