@@ -96,7 +96,7 @@ form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearError();
 
-    const email = emailInput.value;
+    const email = emailInput.value.trim();
     const password = passwordInput.value;
     const originalText = submitBtnText.textContent;
 
