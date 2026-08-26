@@ -122,7 +122,13 @@ if (taskListContainer) {
             const data = doc.data();
             
             const article = document.createElement('article');
-            article.className = "dynamic-task bg-[#F0FFF4] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer fade-in-up";
+            article.className = "dynamic-task bg-[#F0FFF4] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer fade-in-up task-card";
+            
+            article.dataset.content = data.content || '';
+            if (data.createdAt) {
+                const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                article.dataset.createdAt = date.toLocaleString('ja-JP');
+            }
             
             article.innerHTML = `
                 <div>
@@ -145,13 +151,38 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         if (logoutModal && !logoutModal.classList.contains('hidden')) closeLogoutModal();
         if (newTaskModal && !newTaskModal.classList.contains('hidden')) closeNewTaskModal();
+        if (taskDetailsModal && !taskDetailsModal.classList.contains('hidden')) closeTaskDetailsModal();
     }
 });
 
-// Event Delegation for Task Completion Toggle (Crown icon)
+// Task Details Modal Logic
+const taskDetailsModal = document.getElementById('task-details-modal');
+const taskDetailsOverlay = document.getElementById('task-details-overlay');
+const closeTaskDetailsBtn = document.getElementById('close-task-details-btn');
+const taskDetailsTitle = document.getElementById('task-details-title');
+const taskDetailsDate = document.getElementById('task-details-date');
+const taskDetailsContent = document.getElementById('task-details-content');
+
+function openTaskDetailsModal(title, content, dateStr) {
+    if (taskDetailsTitle) taskDetailsTitle.textContent = title;
+    if (taskDetailsContent) taskDetailsContent.textContent = content || '詳細なし';
+    if (taskDetailsDate) taskDetailsDate.textContent = dateStr || '';
+    if (taskDetailsModal) taskDetailsModal.classList.remove('hidden');
+}
+
+function closeTaskDetailsModal() {
+    if (taskDetailsModal) taskDetailsModal.classList.add('hidden');
+}
+
+if (closeTaskDetailsBtn) closeTaskDetailsBtn.addEventListener('click', closeTaskDetailsModal);
+if (taskDetailsOverlay) taskDetailsOverlay.addEventListener('click', closeTaskDetailsModal);
+
+// Event Delegation for Task Actions
 document.addEventListener('click', (e) => {
+    // 1. Task Completion Toggle (Crown icon)
     const crownIcon = e.target.closest('.task-icon');
     if (crownIcon && crownIcon.textContent.trim() === 'crown') {
+        e.stopPropagation();
         const article = crownIcon.closest('article');
         if (article) {
             article.classList.toggle('completed');
@@ -169,5 +200,23 @@ document.addEventListener('click', (e) => {
                 title.classList.toggle('text-on-surface');
             }
         }
+        return; // Don't open modal if clicking crown
+    }
+
+    // 2. More Options Button
+    const moreBtn = e.target.closest('button');
+    if (moreBtn && moreBtn.querySelector('.material-symbols-outlined')?.textContent === 'more_vert') {
+        e.stopPropagation();
+        // Handle more options menu here in the future
+        return; // Don't open modal if clicking more button
+    }
+
+    // 3. Open Task Details
+    const taskCard = e.target.closest('.task-card');
+    if (taskCard) {
+        const title = taskCard.querySelector('.task-title')?.textContent || '';
+        const content = taskCard.dataset.content || '詳細なし';
+        const dateStr = taskCard.dataset.createdAt || '';
+        openTaskDetailsModal(title, content, dateStr);
     }
 });

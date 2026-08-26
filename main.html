@@ -352,6 +352,39 @@
     </div>
     </div>
 
+    <!-- Task Details Modal (Hidden by default) -->
+    <div id="task-details-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden">
+        <!-- Backdrop Overlay -->
+        <div id="task-details-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity">
+            <div class="absolute inset-0 bg-pattern opacity-[0.15]"></div>
+        </div>
+        <!-- Modal Content -->
+        <div class="relative z-10 bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-8 overflow-hidden transition-all duration-300 mx-4">
+            <!-- Left priority indicator -->
+            <div id="task-details-priority-indicator" class="absolute left-0 top-0 bottom-0 w-1 bg-secondary-fixed-dim"></div>
+            
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 id="task-details-title" class="font-headline-md text-headline-md text-on-surface mb-2">タスク名</h2>
+                    <p id="task-details-date" class="font-label-sm text-label-sm text-on-surface-variant"></p>
+                </div>
+                <button id="close-task-details-btn" class="text-on-surface-variant hover:bg-surface-variant p-2 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Content -->
+                <div>
+                    <h3 class="font-label-bold text-label-bold text-on-surface mb-2">内容</h3>
+                    <div id="task-details-content" class="p-4 rounded-md bg-surface-container-low text-on-surface font-body-md text-body-md min-h-[100px] whitespace-pre-wrap">
+                        タスクの詳細内容がここに表示されます。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- New Task Modal (Hidden by default) -->
     <div id="new-task-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden">
         <!-- Backdrop Overlay -->
