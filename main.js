@@ -109,6 +109,92 @@ if (addTaskFab) addTaskFab.addEventListener('click', openNewTaskModal);
 if (cancelTaskBtn) cancelTaskBtn.addEventListener('click', closeNewTaskModal);
 if (newTaskOverlay) newTaskOverlay.addEventListener('click', closeNewTaskModal);
 
+// Edit Task Modal Logic
+const editTaskModal = document.getElementById('edit-task-modal');
+const editTaskOverlay = document.getElementById('edit-task-overlay');
+const editTaskForm = document.getElementById('edit-task-form');
+const editTaskNameInput = document.getElementById('editTaskName');
+const editTaskContentInput = document.getElementById('editTaskContent');
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
+const draftEditBtn = document.getElementById('draft-edit-btn');
+const editPriorityBtn = document.getElementById('editPriorityBtn');
+
+let currentEditingTaskId = null;
+
+function openEditTaskModal(taskId, taskData) {
+    currentEditingTaskId = taskId;
+    if (editTaskNameInput) editTaskNameInput.value = taskData.name || '';
+    if (editTaskContentInput) editTaskContentInput.value = taskData.content || '';
+    // 優先度の初期値反映
+    if (editPriorityBtn) {
+        const priority = taskData.priority || 'green';
+        editPriorityBtn.className = `w-8 h-8 rounded-full bg-${priority}-500 flex-shrink-0 transition-colors duration-300`;
+    }
+    if (editTaskModal) editTaskModal.classList.remove('hidden');
+}
+
+function closeEditTaskModal() {
+    if (editTaskModal) editTaskModal.classList.add('hidden');
+    currentEditingTaskId = null;
+    if (editTaskForm) editTaskForm.reset();
+    if (editPriorityBtn) {
+        editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300';
+    }
+}
+
+if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditTaskModal);
+if (editTaskOverlay) editTaskOverlay.addEventListener('click', closeEditTaskModal);
+
+// 優先度トグル（編集モーダル用）
+if (editPriorityBtn) {
+    editPriorityBtn.addEventListener('click', () => {
+        if (editPriorityBtn.classList.contains('bg-green-500')) {
+            editPriorityBtn.classList.remove('bg-green-500');
+            editPriorityBtn.classList.add('bg-yellow-500');
+        } else if (editPriorityBtn.classList.contains('bg-yellow-500')) {
+            editPriorityBtn.classList.remove('bg-yellow-500');
+            editPriorityBtn.classList.add('bg-red-500');
+        } else {
+            editPriorityBtn.classList.remove('bg-red-500');
+            editPriorityBtn.classList.add('bg-green-500');
+        }
+    });
+}
+
+// 下書き保存ボタン（UI のみ、処理は空）
+if (draftEditBtn) {
+    draftEditBtn.addEventListener('click', () => {
+        // TODO: 下書き保存処理を実装する
+    });
+}
+
+// 「完了」ボタン：Firestore updateDoc
+if (editTaskForm) {
+    editTaskForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentEditingTaskId) return;
+        const newName = editTaskNameInput?.value.trim();
+        const newContent = editTaskContentInput?.value.trim();
+        let priority = 'green';
+        if (editPriorityBtn) {
+            if (editPriorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
+            else if (editPriorityBtn.classList.contains('bg-red-500')) priority = 'red';
+        }
+        try {
+            await updateDoc(doc(db, "task", currentEditingTaskId), {
+                name: newName,
+                content: newContent,
+                priority: priority,
+                updatedAt: serverTimestamp()
+            });
+            closeEditTaskModal();
+        } catch (error) {
+            console.error("Error updating task: ", error);
+            alert("タスクの更新に失敗しました。");
+        }
+    });
+}
+
 // Priority Toggle Logic (Visual only)
 if (priorityBtn) {
     priorityBtn.addEventListener('click', () => {
@@ -176,11 +262,10 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// 編集処理ハンドラー（雛形）
+// 編集処理ハンドラー（編集モーダルを開く）
 function handleEditTask(taskId, taskData) {
-    console.log("Edit task requested:", taskId, taskData);
-    // TODO: 編集モーダルの表示やフォームへの値セット処理をここに実装
-    alert(`「${taskData.name || 'タスク'}」の編集処理を実装できます。（Task ID: ${taskId}）`);
+    closeAllTaskMenus();
+    openEditTaskModal(taskId, taskData);
 }
 
 // 論理削除（ゴミ箱へ移動）処理
@@ -302,8 +387,9 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         if (logoutModal && !logoutModal.classList.contains('hidden')) closeLogoutModal();
         if (newTaskModal && !newTaskModal.classList.contains('hidden')) closeNewTaskModal();
-        closeAllTaskMenus();
+        if (editTaskModal && !editTaskModal.classList.contains('hidden')) closeEditTaskModal();
         if (taskDetailsModal && !taskDetailsModal.classList.contains('hidden')) closeTaskDetailsModal();
+        closeAllTaskMenus();
     }
 });
 
