@@ -98,8 +98,8 @@ function closeNewTaskModal() {
         if (newTaskForm) newTaskForm.reset();
         // Reset priority button to default green
         if (priorityBtn) {
-            priorityBtn.className = 'w-8 h-8 rounded-full flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-on-surface-variant';
-            priorityBtn.style.backgroundColor = '#f0fff4';
+            priorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
+            priorityBtn.style.backgroundColor = '';
             priorityBtn.textContent = '低';
         }
     }
@@ -127,8 +127,18 @@ function openEditTaskModal(taskId, taskData) {
     if (editTaskContentInput) editTaskContentInput.value = taskData.content || '';
     // 優先度の初期値反映
     if (editPriorityBtn) {
-        const priority = taskData.priority || 'green';
-        editPriorityBtn.className = `w-8 h-8 rounded-full bg-${priority}-500 flex-shrink-0 transition-colors duration-300`;
+        const priority = taskData.priority || 3;
+        editPriorityBtn.className = 'w-8 h-8 rounded-full flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
+        if (priority === 1) {
+            editPriorityBtn.classList.add('bg-red-500');
+            editPriorityBtn.textContent = '高';
+        } else if (priority === 2) {
+            editPriorityBtn.classList.add('bg-yellow-500');
+            editPriorityBtn.textContent = '中';
+        } else {
+            editPriorityBtn.classList.add('bg-green-500');
+            editPriorityBtn.textContent = '低';
+        }
     }
     if (editTaskModal) editTaskModal.classList.remove('hidden');
 }
@@ -138,7 +148,8 @@ function closeEditTaskModal() {
     currentEditingTaskId = null;
     if (editTaskForm) editTaskForm.reset();
     if (editPriorityBtn) {
-        editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300';
+        editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
+        editPriorityBtn.textContent = '低';
     }
 }
 
@@ -148,15 +159,18 @@ if (editTaskOverlay) editTaskOverlay.addEventListener('click', closeEditTaskModa
 // 優先度トグル（編集モーダル用）
 if (editPriorityBtn) {
     editPriorityBtn.addEventListener('click', () => {
-        if (editPriorityBtn.classList.contains('bg-green-500')) {
+        if (editPriorityBtn.textContent === '低') {
             editPriorityBtn.classList.remove('bg-green-500');
             editPriorityBtn.classList.add('bg-yellow-500');
-        } else if (editPriorityBtn.classList.contains('bg-yellow-500')) {
+            editPriorityBtn.textContent = '中';
+        } else if (editPriorityBtn.textContent === '中') {
             editPriorityBtn.classList.remove('bg-yellow-500');
             editPriorityBtn.classList.add('bg-red-500');
+            editPriorityBtn.textContent = '高';
         } else {
             editPriorityBtn.classList.remove('bg-red-500');
             editPriorityBtn.classList.add('bg-green-500');
+            editPriorityBtn.textContent = '低';
         }
     });
 }
@@ -175,10 +189,10 @@ if (editTaskForm) {
         if (!currentEditingTaskId) return;
         const newName = editTaskNameInput?.value.trim();
         const newContent = editTaskContentInput?.value.trim();
-        let priority = 'green';
+        let priority = 3;
         if (editPriorityBtn) {
-            if (editPriorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
-            else if (editPriorityBtn.classList.contains('bg-red-500')) priority = 'red';
+            if (editPriorityBtn.textContent === '高') priority = 1;
+            else if (editPriorityBtn.textContent === '中') priority = 2;
         }
         try {
             await updateDoc(doc(db, "task", currentEditingTaskId), {
@@ -200,13 +214,16 @@ if (priorityBtn) {
     priorityBtn.addEventListener('click', () => {
         const currentText = priorityBtn.textContent.trim();
         if (priorityBtn.textContent === '低') {
-            priorityBtn.style.backgroundColor = '#fff9e6';
+            priorityBtn.classList.remove('bg-green-500');
+            priorityBtn.classList.add('bg-yellow-500');
             priorityBtn.textContent = '中';
         } else if (priorityBtn.textContent === '中') {
-            priorityBtn.style.backgroundColor = '#fff0f0';
+            priorityBtn.classList.remove('bg-yellow-500');
+            priorityBtn.classList.add('bg-red-500');
             priorityBtn.textContent = '高';
         } else {
-            priorityBtn.style.backgroundColor = '#f0fff4';
+            priorityBtn.classList.remove('bg-red-500');
+            priorityBtn.classList.add('bg-green-500');
             priorityBtn.textContent = '低';
         }
     });
