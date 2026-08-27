@@ -31,6 +31,13 @@ const deleteModalConfirmBtn = document.getElementById('delete-modal-confirm-btn'
 // Pending deletion state
 let pendingDeleteIds = [];
 
+// 優先度別のカードスタイル定義
+const PRIORITY_STYLES = {
+    1: { bg: 'bg-[#FFF0F0]', border: 'border-l-error' },            // 赤 (高)
+    2: { bg: 'bg-[#FFF9E6]', border: 'border-l-primary-container' }, // 黄 (中)
+    3: { bg: 'bg-[#F0FFF4]', border: 'border-l-secondary-fixed-dim' }  // 緑 (低)
+};
+
 // Helper function to escape HTML
 function escapeHtml(str) {
     if (!str) return '';
@@ -235,8 +242,11 @@ onAuthStateChanged(auth, (user) => {
 
             const remainingText = remainingDays > 0 ? `残り${remainingDays}日` : "本日中に削除";
 
+            const priority = data.priority || 3;
+            const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
+
             const card = document.createElement('article');
-            card.className = "bg-surface-container-lowest rounded-xl p-4 md:p-5 flex items-start gap-4 task-card-shadow border border-outline-variant/30 hover:border-outline-variant transition-all fade-in-up group";
+            card.className = `${style.bg} rounded-xl p-4 md:p-5 flex items-start gap-4 task-card-shadow border border-outline-variant/30 border-l-4 ${style.border} hover:border-outline-variant transition-all fade-in-up group`;
             card.dataset.id = docId;
 
             card.innerHTML = `
