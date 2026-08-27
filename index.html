@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>SparkDo - Login</title>
+  <title>威風とぅどぅ - Login</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <!-- Material Symbols -->
@@ -200,7 +200,7 @@
     <div class="bg-surface rounded-xl shadow-[0_4px_20px_0_rgba(0,0,0,0.04)] p-8 md:p-10 w-full flex flex-col gap-6">
       <!-- Header Section -->
       <div class="text-center mb-2">
-        <h1 class="font-display text-display text-primary tracking-tight mb-2">Chirimo</h1>
+        <h1 class="font-display text-display text-primary tracking-tight mb-2">威風とぅどぅ</h1>
       </div>
       <!-- Form Section -->
       <form class="flex flex-col gap-5">
@@ -221,6 +221,10 @@
             <input
               class="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-4 py-3 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all shadow-sm"
               id="password" placeholder="••••••••" required="" type="password">
+            <button type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1 flex items-center justify-center rounded-full transition-colors">
+              <span class="material-symbols-outlined text-[20px]">visibility</span>
+            </button>
           </div>
           <div class="text-right mt-2"><a
               class="font-label-sm text-label-sm text-primary hover:text-primary-container transition-colors"
@@ -242,7 +246,7 @@
         <div class="flex-grow border-t border-surface-variant"></div>
       </div>
       <!-- Social Login -->
-      <button
+      <button id="google-login-btn"
         class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-label-bold text-label-bold py-3.5 rounded-lg shadow-sm hover:bg-surface-container-low transition-colors flex items-center justify-center gap-3"
         type="button">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -265,7 +269,7 @@
     <!-- Footer / Create Account -->
     <div class="mt-8 text-center">
       <p class="font-body-lg text-body-lg text-on-surface-variant">
-        SparkDoは初めてですか？
+        威風とぅどぅは初めてですか？
         <a class="font-bold text-primary hover:text-primary-container transition-colors ml-1"
           href="register.html">アカウントを作成</a>
       </p>
