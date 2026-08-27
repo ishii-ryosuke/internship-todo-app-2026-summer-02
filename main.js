@@ -329,6 +329,8 @@ if (taskListContainer && completedTaskListContainer) {
                     const data = taskDoc.data();
                     const taskId = taskDoc.id;
 
+                    // ゴミ箱に入っているタスク（isDeleted: true）は除外
+                    if (data.isDeleted === true) return;
 
                     const priority = data.priority || 3;
                     const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
@@ -349,6 +351,7 @@ if (taskListContainer && completedTaskListContainer) {
                     }
 
                     article.dataset.content = data.content || '';
+                    article.dataset.priority = priority;
                     if (data.createdAt) {
                         const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
                         article.dataset.createdAt = date.toLocaleString('ja-JP');
@@ -450,11 +453,21 @@ const closeTaskDetailsBtn = document.getElementById('close-task-details-btn');
 const taskDetailsTitle = document.getElementById('task-details-title');
 const taskDetailsDate = document.getElementById('task-details-date');
 const taskDetailsContent = document.getElementById('task-details-content');
+const taskDetailsModalContent = document.getElementById('task-details-modal-content');
+const taskDetailsPriorityIndicator = document.getElementById('task-details-priority-indicator');
 
-function openTaskDetailsModal(title, content, dateStr) {
+function openTaskDetailsModal(title, content, dateStr, priorityNum) {
     if (taskDetailsTitle) taskDetailsTitle.textContent = title;
     if (taskDetailsContent) taskDetailsContent.textContent = content || '詳細なし';
     if (taskDetailsDate) taskDetailsDate.textContent = dateStr || '';
+
+    if (taskDetailsModalContent && taskDetailsPriorityIndicator) {
+        const priority = priorityNum || 3;
+        const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
+        taskDetailsModalContent.className = `relative z-10 w-full max-w-2xl rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-8 overflow-hidden transition-all duration-300 mx-4 ${style.bg}`;
+        taskDetailsPriorityIndicator.className = `absolute left-0 top-0 bottom-0 w-1 ${style.border.replace('border-l-', 'bg-')}`;
+    }
+
     if (taskDetailsModal) taskDetailsModal.classList.remove('hidden');
 }
 
@@ -515,7 +528,8 @@ document.addEventListener('click', async (e) => {
         const title = taskCard.querySelector('.task-title')?.textContent || '';
         const content = taskCard.dataset.content || '詳細なし';
         const dateStr = taskCard.dataset.createdAt || '';
-        openTaskDetailsModal(title, content, dateStr);
+        const priority = parseInt(taskCard.dataset.priority) || 3;
+        openTaskDetailsModal(title, content, dateStr, priority);
     }
 });
 
