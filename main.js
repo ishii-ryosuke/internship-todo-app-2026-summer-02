@@ -422,7 +422,7 @@ if (taskListContainer && completedTaskListContainer) {
                             <span class="material-symbols-outlined ${iconClass} task-icon">crown</span>
                         </div>
                         <div class="flex-grow min-w-0">
-                            <span class="font-body-lg text-body-lg font-semibold block task-title break-words ${titleClass}">
+                            <span class="font-body-lg text-body-lg font-semibold block task-title break-all ${titleClass}" style="overflow-wrap: anywhere;">
                                 ${escapeHtml(data.name || '無題のタスク')}
                             </span>
                         </div>
