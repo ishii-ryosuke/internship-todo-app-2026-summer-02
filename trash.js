@@ -13,6 +13,7 @@ import {
 const taskList = document.getElementById('taskList');
 const selectAllCheckbox = document.getElementById('selectAllCheckbox');
 const selectAllVisual = document.getElementById('selectAllVisual');
+const selectAllLabel = document.getElementById('selectAllLabel');
 const bulkActionsPanel = document.getElementById('bulkActionsPanel');
 const bulkRestoreBtn = document.getElementById('bulkRestoreBtn');
 const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
@@ -54,12 +55,14 @@ function updateBulkActionsState() {
         bulkActionsPanel.classList.remove('opacity-100', 'translate-y-0');
     }
 
-    // Toggle select all visual
+    // Toggle select all visual & text
     selectAllCheckbox.checked = allChecked;
     if (allChecked) {
         selectAllVisual.classList.add('select-all-active');
+        if (selectAllLabel) selectAllLabel.textContent = '全解除';
     } else {
         selectAllVisual.classList.remove('select-all-active');
+        if (selectAllLabel) selectAllLabel.textContent = '全選択';
     }
 }
 
