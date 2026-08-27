@@ -24,8 +24,8 @@ const submitBtn = form.querySelector('button[type="submit"]');
 const submitBtnText = submitBtn.querySelector('span'); // "ワークスペースにログイン"
 const submitBtnIcon = submitBtn.querySelectorAll('span')[1]; // 矢印アイコン
 
-const googleBtn = document.querySelector('button[type="button"]');
-const googleBtnText = googleBtn.querySelector('span');
+const googleBtn = document.getElementById('google-login-btn');
+const googleBtnText = googleBtn ? googleBtn.querySelector('span') : null;
 
 // エラーメッセージ表示用のコンテナ作成と配置
 // フォームの送信ボタンのすぐ上に配置する
@@ -114,19 +114,40 @@ form.addEventListener('submit', async (e) => {
 });
 
 // 2. Google アカウントログイン処理
-googleBtn.addEventListener('click', async () => {
-    clearError();
-    const originalText = googleBtnText.textContent;
+if (googleBtn) {
+    googleBtn.addEventListener('click', async () => {
+        clearError();
+        const originalText = googleBtnText ? googleBtnText.textContent : 'Googleでサインイン';
 
-    toggleLoading(googleBtn, googleBtnText, true, originalText);
+        toggleLoading(googleBtn, googleBtnText, true, originalText);
 
-    try {
-        await signInWithPopup(auth, googleProvider);
-        window.location.href = '/main.html';
-    } catch (error) {
-        console.error('Google Login Error:', error);
-        const msg = getErrorMessage(error);
-        showError(msg);
-        toggleLoading(googleBtn, googleBtnText, false, originalText);
+        try {
+            await signInWithPopup(auth, googleProvider);
+            window.location.href = '/main.html';
+        } catch (error) {
+            console.error('Google Login Error:', error);
+            const msg = getErrorMessage(error);
+            showError(msg);
+            toggleLoading(googleBtn, googleBtnText, false, originalText);
+        }
+    });
+}
+// --- パスワードの表示/非表示切り替え ---
+const setupPasswordToggle = (inputId) => {
+    const input = document.getElementById(inputId);
+    const toggleBtn = input.nextElementSibling;
+    if (toggleBtn && toggleBtn.tagName === 'BUTTON') {
+        const icon = toggleBtn.querySelector('span');
+        toggleBtn.addEventListener('click', () => {
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off'; // アイコンを非表示マークに
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility'; // アイコンを表示マークに
+            }
+        });
     }
-});
+};
+
+setupPasswordToggle('password');
