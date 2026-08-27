@@ -152,10 +152,30 @@ if (editPriorityBtn) {
     });
 }
 
-// 下書き保存ボタン（UI のみ、処理は空）
+// 編集モーダルの下書き保存ボタン
 if (draftEditBtn) {
-    draftEditBtn.addEventListener('click', () => {
-        // TODO: 下書き保存処理を実装する
+    draftEditBtn.addEventListener('click', async () => {
+        if (!currentEditingTaskId) return;
+        const newName = editTaskNameInput?.value.trim() || '無題の下書き';
+        const newContent = editTaskContentInput?.value.trim() || '';
+        let priority = 'green';
+        if (editPriorityBtn) {
+            if (editPriorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
+            else if (editPriorityBtn.classList.contains('bg-red-500')) priority = 'red';
+        }
+        try {
+            await updateDoc(doc(db, "task", currentEditingTaskId), {
+                name: newName,
+                content: newContent,
+                priority: priority,
+                status: 'draft',
+                updatedAt: serverTimestamp()
+            });
+            closeEditTaskModal();
+        } catch (error) {
+            console.error("Error saving draft: ", error);
+            alert("下書きの保存に失敗しました。");
+        }
     });
 }
 
@@ -176,6 +196,7 @@ if (editTaskForm) {
                 name: newName,
                 content: newContent,
                 priority: priority,
+                status: 'published',
                 updatedAt: serverTimestamp()
             });
             closeEditTaskModal();
@@ -208,6 +229,11 @@ if (newTaskForm) {
         e.preventDefault();
         const taskName = document.getElementById('taskName').value;
         const taskContent = document.getElementById('taskContent').value;
+        let priority = 'green';
+        if (priorityBtn) {
+            if (priorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
+            else if (priorityBtn.classList.contains('bg-red-500')) priority = 'red';
+        }
 
         try {
             if (!auth.currentUser) return; // Prevent adding if not logged in
@@ -215,6 +241,8 @@ if (newTaskForm) {
             await addDoc(collection(db, "task"), {
                 name: taskName,
                 content: taskContent,
+                priority: priority,
+                status: 'published',
                 isDeleted: false,
                 createdAt: new Date(),
                 userId: auth.currentUser.uid
@@ -223,6 +251,38 @@ if (newTaskForm) {
         } catch (error) {
             console.error("Error adding document: ", error);
             alert("タスクの追加に失敗しました。");
+        }
+    });
+}
+
+// 新規タスクモーダルの下書き保存ボタン
+const draftTaskBtn = document.getElementById('draft-task-btn');
+if (draftTaskBtn) {
+    draftTaskBtn.addEventListener('click', async () => {
+        const taskName = document.getElementById('taskName')?.value?.trim() || '無題の下書き';
+        const taskContent = document.getElementById('taskContent')?.value?.trim() || '';
+        let priority = 'green';
+        if (priorityBtn) {
+            if (priorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
+            else if (priorityBtn.classList.contains('bg-red-500')) priority = 'red';
+        }
+
+        try {
+            if (!auth.currentUser) return;
+
+            await addDoc(collection(db, "task"), {
+                name: taskName,
+                content: taskContent,
+                priority: priority,
+                status: 'draft',
+                isDeleted: false,
+                createdAt: new Date(),
+                userId: auth.currentUser.uid
+            });
+            closeNewTaskModal();
+        } catch (error) {
+            console.error("Error saving draft task: ", error);
+            alert("下書きの保存に失敗しました。");
         }
     });
 }
@@ -277,8 +337,8 @@ if (taskListContainer) {
                     const data = taskDoc.data();
                     const taskId = taskDoc.id;
 
-                    // ゴミ箱に入っているタスク（isDeleted: true）は除外
-                    if (data.isDeleted === true) return;
+                    // ゴミ箱に入っているタスク（isDeleted: true）および下書き（status: 'draft'）は除外
+                    if (data.isDeleted === true || data.status === 'draft') return;
 
                     const article = document.createElement('article');
                     // ドロップダウンがはみ出して表示されるよう、カード自体にrelativeを付与し、メニュー展開時はz-30で前面化
