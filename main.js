@@ -1,12 +1,20 @@
-import { db } from './firebase-config.js';
+import { db, auth } from './firebase-config.js';
 import {
     collection,
     addDoc,
-    onSnapshot,
+    onSnapshot, query, where,
     doc,
     updateDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+// Check authentication state
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = 'index.html';
+    }
+});
 
 // XSS対策用HTMLエスケープ関数
 function escapeHtml(str) {
@@ -114,13 +122,16 @@ if (newTaskForm) {
         e.preventDefault();
         const taskName = document.getElementById('taskName').value;
         const taskContent = document.getElementById('taskContent').value;
-        
+
         try {
+            if (!auth.currentUser) return; // Prevent adding if not logged in
+
             await addDoc(collection(db, "task"), {
                 name: taskName,
                 content: taskContent,
                 isDeleted: false,
-                createdAt: new Date()
+                createdAt: new Date(),
+                userId: auth.currentUser.uid
             });
             closeNewTaskModal();
         } catch (error) {
@@ -170,43 +181,46 @@ async function handleDeleteTask(taskId) {
 // Real-time listener for tasks
 const taskListContainer = document.getElementById('task-list-container');
 if (taskListContainer) {
-    onSnapshot(collection(db, "task"), (snapshot) => {
-        const dynamicTasks = taskListContainer.querySelectorAll('.dynamic-task');
-        dynamicTasks.forEach(task => task.remove());
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            const q = query(collection(db, "task"), where("userId", "==", user.uid));
+            onSnapshot(q, (snapshot) => {
+                const dynamicTasks = taskListContainer.querySelectorAll('.dynamic-task');
+                dynamicTasks.forEach(task => task.remove());
 
-        snapshot.forEach((taskDoc) => {
-            const data = taskDoc.data();
-            const taskId = taskDoc.id;
+                snapshot.forEach((taskDoc) => {
+                    const data = taskDoc.data();
+                    const taskId = taskDoc.id;
 
-            // ゴミ箱に入っているタスク（isDeleted: true）は除外
-            if (data.isDeleted === true) return;
-            
-            const article = document.createElement('article');
-            // ドロップダウンがはみ出して表示されるよう、カード自体にrelativeを付与し、メニュー展開時はz-30で前面化
-            article.className = "dynamic-task bg-[#F0FFF4] rounded-lg p-4 flex items-start gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer fade-in-up";
-            
-            article.innerHTML = `
-                <div>
-                    <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
-                </div>
-                <div class="flex-grow min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title break-words">
-                            ${escapeHtml(data.name || '無題のタスク')}
-                        </span>
-                    </div>
-                    ${data.content ? `
-                    <div class="flex gap-2 mt-2">
-                        <span class="text-sm text-on-surface-variant break-words">${escapeHtml(data.content)}</span>
-                    </div>` : ''}
-                </div>
-                
+                    // ゴミ箱に入っているタスク（isDeleted: true）は除外
+                    if (data.isDeleted === true) return;
+
+                    const article = document.createElement('article');
+                    // ドロップダウンがはみ出して表示されるよう、カード自体にrelativeを付与し、メニュー展開時はz-30で前面化
+                    article.className = "dynamic-task bg-[#F0FFF4] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer fade-in-up task-card";
+
+                    article.dataset.content = data.content || '';
+                    if (data.createdAt) {
+                        const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                        article.dataset.createdAt = date.toLocaleString('ja-JP');
+                    }
+
+                    article.innerHTML = `
+                        <div>
+                            <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title break-words">
+                                ${escapeHtml(data.name || '無題のタスク')}
+                            </span>
+                        </div>
+                        
                 <!-- Three-dot Menu Container (z-index managed) -->
                 <div class="relative self-center ml-auto task-menu-container flex-shrink-0">
                     <button type="button" class="task-menu-btn text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex items-center justify-center" aria-label="タスク操作メニュー">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                    <!-- Dropdown Menu (z-50, shadow-xl) -->
+                                <span class="material-symbols-outlined">more_vert</span>
+                            </button>
+                            <!-- Dropdown Menu (z-50, shadow-xl) -->
                     <div class="task-dropdown-menu hidden absolute right-0 top-full mt-1 w-32 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/40 py-1 z-50">
                         <button type="button" class="task-edit-btn w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-container flex items-center gap-2 transition-colors">
                             <span class="material-symbols-outlined text-[18px]">edit</span>
@@ -220,39 +234,41 @@ if (taskListContainer) {
                 </div>
             `;
 
-            // イベントリスナーの登録
-            const menuBtn = article.querySelector('.task-menu-btn');
-            const dropdownMenu = article.querySelector('.task-dropdown-menu');
-            const editBtn = article.querySelector('.task-edit-btn');
-            const deleteBtn = article.querySelector('.task-delete-btn');
+                    // イベントリスナーの登録
+                    const menuBtn = article.querySelector('.task-menu-btn');
+                    const dropdownMenu = article.querySelector('.task-dropdown-menu');
+                    const editBtn = article.querySelector('.task-edit-btn');
+                    const deleteBtn = article.querySelector('.task-delete-btn');
 
-            // メニュー開閉（開くカードを最前面 z-30 に引き上げる）
-            menuBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isHidden = dropdownMenu.classList.contains('hidden');
-                closeAllTaskMenus();
-                if (isHidden) {
-                    dropdownMenu.classList.remove('hidden');
-                    article.classList.add('z-30');
-                }
-            });
+                    // メニュー開閉（開くカードを最前面 z-30 に引き上げる）
+                    menuBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isHidden = dropdownMenu.classList.contains('hidden');
+                        closeAllTaskMenus();
+                        if (isHidden) {
+                            dropdownMenu.classList.remove('hidden');
+                            article.classList.add('z-30');
+                        }
+                    });
 
-            // 編集ボタン押下
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                closeAllTaskMenus();
-                handleEditTask(taskId, data);
-            });
+                    // 編集ボタン押下
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        closeAllTaskMenus();
+                        handleEditTask(taskId, data);
+                    });
 
-            // 削除ボタン押下（ゴミ箱移動）
-            deleteBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                closeAllTaskMenus();
-                await handleDeleteTask(taskId);
+                    // 削除ボタン押下（ゴミ箱移動）
+                    deleteBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        closeAllTaskMenus();
+                        await handleDeleteTask(taskId);
+                    });
+
+                    taskListContainer.appendChild(article);
+                });
             });
-            
-            taskListContainer.appendChild(article);
-        });
+        }
     });
 }
 
@@ -261,22 +277,47 @@ document.addEventListener('keydown', (e) => {
         if (logoutModal && !logoutModal.classList.contains('hidden')) closeLogoutModal();
         if (newTaskModal && !newTaskModal.classList.contains('hidden')) closeNewTaskModal();
         closeAllTaskMenus();
+        if (taskDetailsModal && !taskDetailsModal.classList.contains('hidden')) closeTaskDetailsModal();
     }
 });
 
-// Event Delegation for Task Completion Toggle (Crown icon)
+// Task Details Modal Logic
+const taskDetailsModal = document.getElementById('task-details-modal');
+const taskDetailsOverlay = document.getElementById('task-details-overlay');
+const closeTaskDetailsBtn = document.getElementById('close-task-details-btn');
+const taskDetailsTitle = document.getElementById('task-details-title');
+const taskDetailsDate = document.getElementById('task-details-date');
+const taskDetailsContent = document.getElementById('task-details-content');
+
+function openTaskDetailsModal(title, content, dateStr) {
+    if (taskDetailsTitle) taskDetailsTitle.textContent = title;
+    if (taskDetailsContent) taskDetailsContent.textContent = content || '詳細なし';
+    if (taskDetailsDate) taskDetailsDate.textContent = dateStr || '';
+    if (taskDetailsModal) taskDetailsModal.classList.remove('hidden');
+}
+
+function closeTaskDetailsModal() {
+    if (taskDetailsModal) taskDetailsModal.classList.add('hidden');
+}
+
+if (closeTaskDetailsBtn) closeTaskDetailsBtn.addEventListener('click', closeTaskDetailsModal);
+if (taskDetailsOverlay) taskDetailsOverlay.addEventListener('click', closeTaskDetailsModal);
+
+// Event Delegation for Task Actions
 document.addEventListener('click', (e) => {
+    // 1. Task Completion Toggle (Crown icon)
     const crownIcon = e.target.closest('.task-icon');
     if (crownIcon && crownIcon.textContent.trim() === 'crown') {
+        e.stopPropagation();
         const article = crownIcon.closest('article');
         if (article) {
             article.classList.toggle('completed');
-            
+
             // Toggle icon classes
             crownIcon.classList.toggle('icon-fill');
             crownIcon.classList.toggle('text-error');
             crownIcon.classList.toggle('text-tertiary');
-            
+
             // Toggle title classes
             const title = article.querySelector('.task-title');
             if (title) {
@@ -285,5 +326,23 @@ document.addEventListener('click', (e) => {
                 title.classList.toggle('text-on-surface');
             }
         }
+        return; // Don't open modal if clicking crown
+    }
+
+    // 2. More Options Button
+    const moreBtn = e.target.closest('button');
+    if (moreBtn && moreBtn.querySelector('.material-symbols-outlined')?.textContent === 'more_vert') {
+        e.stopPropagation();
+        // Handle more options menu here in the future
+        return; // Don't open modal if clicking more button
+    }
+
+    // 3. Open Task Details
+    const taskCard = e.target.closest('.task-card');
+    if (taskCard) {
+        const title = taskCard.querySelector('.task-title')?.textContent || '';
+        const content = taskCard.dataset.content || '詳細なし';
+        const dateStr = taskCard.dataset.createdAt || '';
+        openTaskDetailsModal(title, content, dateStr);
     }
 });
