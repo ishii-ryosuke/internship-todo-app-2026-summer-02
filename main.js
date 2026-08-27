@@ -181,10 +181,30 @@ if (editPriorityBtn) {
     });
 }
 
-// 下書き保存ボタン（UI のみ、処理は空）
+// 編集モーダルの下書き保存ボタン
 if (draftEditBtn) {
-    draftEditBtn.addEventListener('click', () => {
-        // TODO: 下書き保存処理を実装する
+    draftEditBtn.addEventListener('click', async () => {
+        if (!currentEditingTaskId) return;
+        const newName = editTaskNameInput?.value.trim() || '無題の下書き';
+        const newContent = editTaskContentInput?.value.trim() || '';
+        let priority = 3;
+        if (editPriorityBtn) {
+            if (editPriorityBtn.textContent.trim() === '高') priority = 1;
+            else if (editPriorityBtn.textContent.trim() === '中') priority = 2;
+        }
+        try {
+            await updateDoc(doc(db, "task", currentEditingTaskId), {
+                name: newName,
+                content: newContent,
+                priority: priority,
+                status: 'draft',
+                updatedAt: serverTimestamp()
+            });
+            closeEditTaskModal();
+        } catch (error) {
+            console.error("Error saving draft: ", error);
+            alert("下書きの保存に失敗しました。");
+        }
     });
 }
 
@@ -205,6 +225,7 @@ if (editTaskForm) {
                 name: newName,
                 content: newContent,
                 priority: priority,
+                status: 'published',
                 updatedAt: serverTimestamp()
             });
             closeEditTaskModal();
@@ -242,11 +263,11 @@ if (newTaskForm) {
         const taskName = document.getElementById('taskName').value;
         const taskContent = document.getElementById('taskContent').value;
 
-        // 優先度ボタンの色から数値を取得
+        // 優先度ボタンのテキストから数値を取得（1: 高, 2: 中, 3: 低）
         let priority = 3; // デフォルト: 緑（低）
         if (priorityBtn) {
-            if (priorityBtn.textContent === '高') priority = 1;
-            else if (priorityBtn.textContent === '中') priority = 2;
+            if (priorityBtn.textContent.trim() === '高') priority = 1;
+            else if (priorityBtn.textContent.trim() === '中') priority = 2;
         }
 
         try {
@@ -255,16 +276,51 @@ if (newTaskForm) {
             await addDoc(collection(db, "task"), {
                 name: taskName,
                 content: taskContent,
+                priority: priority,
+                status: 'published',
                 isDeleted: false,
                 isCompleted: false,
                 createdAt: new Date(),
-                userId: auth.currentUser.uid,
-                priority: priority
+                userId: auth.currentUser.uid
             });
             closeNewTaskModal();
         } catch (error) {
             console.error("Error adding document: ", error);
             alert("タスクの追加に失敗しました。");
+        }
+    });
+}
+
+// 新規タスクモーダルの下書き保存ボタン
+const draftTaskBtn = document.getElementById('draft-task-btn');
+if (draftTaskBtn) {
+    draftTaskBtn.addEventListener('click', async () => {
+        const taskName = document.getElementById('taskName')?.value?.trim() || '無題の下書き';
+        const taskContent = document.getElementById('taskContent')?.value?.trim() || '';
+
+        // 優先度ボタンのテキストから数値を取得（1: 高, 2: 中, 3: 低）
+        let priority = 3;
+        if (priorityBtn) {
+            if (priorityBtn.textContent.trim() === '高') priority = 1;
+            else if (priorityBtn.textContent.trim() === '中') priority = 2;
+        }
+
+        try {
+            if (!auth.currentUser) return;
+
+            await addDoc(collection(db, "task"), {
+                name: taskName,
+                content: taskContent,
+                priority: priority,
+                status: 'draft',
+                isDeleted: false,
+                createdAt: new Date(),
+                userId: auth.currentUser.uid
+            });
+            closeNewTaskModal();
+        } catch (error) {
+            console.error("Error saving draft task: ", error);
+            alert("下書きの保存に失敗しました。");
         }
     });
 }
@@ -329,8 +385,8 @@ if (taskListContainer && completedTaskListContainer) {
                     const data = taskDoc.data();
                     const taskId = taskDoc.id;
 
-                    // ゴミ箱に入っているタスク（isDeleted: true）は除外
-                    if (data.isDeleted === true) return;
+                    // ゴミ箱に入っているタスク（isDeleted: true）および下書き（status: 'draft'）は除外
+                    if (data.isDeleted === true || data.status === 'draft') return;
 
                     const priority = data.priority || 3;
                     const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
