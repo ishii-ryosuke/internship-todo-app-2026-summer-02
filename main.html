@@ -357,15 +357,18 @@
             <form id="new-task-form" class="space-y-6">
                 <!-- Task Name -->
                 <div>
-                    <label class="block font-label-bold text-label-bold text-on-surface mb-2"
-                        for="taskName">タスク名</label>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="font-label-bold text-label-bold text-on-surface"
+                            for="taskName">タスク名</label>
+                        <span class="font-label-bold text-label-bold text-on-surface-variant">優先度</span>
+                    </div>
                     <div class="flex items-center gap-3">
                         <input
                             class="flex-grow h-12 px-4 rounded-md border border-outline-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder:text-on-surface-variant/50 font-body-md text-body-md"
                             id="taskName" placeholder="例：プロジェクトの進捗確認" type="text" required />
                         <button aria-label="Toggle priority"
-                            class="w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300"
-                            id="priorityBtn" type="button"></button>
+                            class="w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]"
+                            id="priorityBtn" type="button">低</button>
                     </div>
                 </div>
                 <!-- Content -->
@@ -395,6 +398,53 @@
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">add_task</span>
                         追加
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal (Hidden by default) -->
+    <div id="edit-task-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden">
+        <!-- Backdrop Overlay -->
+        <div id="edit-task-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity">
+            <div class="absolute inset-0 bg-pattern opacity-[0.15]"></div>
+        </div>
+        <!-- Modal Content -->
+        <div class="relative z-10 bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-8 overflow-hidden transition-all duration-300 mx-4">
+            <!-- Left priority indicator -->
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+            <div class="mb-8">
+                <h2 class="font-headline-md text-headline-md text-on-surface mb-2">タスクの編集</h2>
+            </div>
+            <form id="edit-task-form" class="space-y-6">
+                <!-- Task Name -->
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block font-label-bold text-label-bold text-on-surface" for="editTaskName">タスク名</label>
+                        <label class="block font-label-bold text-label-sm text-on-surface" for="editPriorityBtn">優先度</label>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <input class="flex-grow h-12 px-4 rounded-md border border-outline-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder:text-on-surface-variant/50 font-body-md text-body-md" id="editTaskName" placeholder="例：プロジェクトの進捗確認" type="text" required />
+                        <button aria-label="Toggle priority" class="w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]" id="editPriorityBtn" type="button">低</button>
+                    </div>
+                </div>
+                <!-- Content -->
+                <div>
+                    <label class="block font-label-bold text-label-bold text-on-surface mb-2" for="editTaskContent">内容</label>
+                    <textarea class="w-full p-4 rounded-md border border-outline-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder:text-on-surface-variant/50 font-body-md text-body-md resize-y" id="editTaskContent" placeholder="タスクの詳細を記入してください..." rows="5"></textarea>
+                </div>
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row justify-end items-center pt-6 gap-4 border-t border-surface-variant">
+                    <button id="cancel-edit-btn" class="w-full sm:w-auto px-6 py-3 rounded-full border-2 border-primary text-primary font-label-bold text-label-bold hover:bg-primary/5 active:scale-95 transition-all duration-200" type="button">
+                        キャンセル
+                    </button>
+                    <button id="draft-edit-btn" class="w-full sm:w-auto px-6 py-3 rounded-full bg-secondary-container text-on-secondary-container font-label-bold text-label-bold hover:bg-secondary-fixed active:scale-95 transition-all duration-200" type="button">
+                        下書き保存
+                    </button>
+                    <button class="w-full sm:w-auto px-8 py-3 rounded-full bg-primary text-on-primary font-label-bold text-label-bold hover:bg-surface-tint shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2" type="submit">
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_task</span>
+                        完了
                     </button>
                 </div>
             </form>
