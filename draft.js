@@ -48,6 +48,16 @@ let pendingDeleteIds = [];
 let currentEditingTaskId = null;
 let unsubscribe = null;
 
+// 優先度別のカードスタイル定義（メイン画面と統一）
+const PRIORITY_STYLES = {
+    1: { bg: 'bg-[#FFF0F0]', border: 'border-l-error' },            // 赤 (高)
+    2: { bg: 'bg-[#FFF9E6]', border: 'border-l-primary-container' }, // 黄 (中)
+    3: { bg: 'bg-[#F0FFF4]', border: 'border-l-secondary-fixed-dim' }, // 緑 (低)
+    red: { bg: 'bg-[#FFF0F0]', border: 'border-l-error' },
+    yellow: { bg: 'bg-[#FFF9E6]', border: 'border-l-primary-container' },
+    green: { bg: 'bg-[#F0FFF4]', border: 'border-l-secondary-fixed-dim' }
+};
+
 // ============================================================
 // Helpers
 // ============================================================
@@ -126,8 +136,18 @@ function openEditModal(taskId, taskData) {
     if (editTaskNameInput) editTaskNameInput.value = taskData.name || '';
     if (editTaskContentInput) editTaskContentInput.value = taskData.content || '';
     if (editPriorityBtn) {
-        const priority = taskData.priority || 'green';
-        editPriorityBtn.className = `w-8 h-8 rounded-full bg-${priority}-500 flex-shrink-0 transition-colors duration-300`;
+        const priority = taskData.priority || 3;
+        editPriorityBtn.className = 'w-8 h-8 rounded-full flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
+        if (priority === 1 || priority === 'red') {
+            editPriorityBtn.classList.add('bg-red-500');
+            editPriorityBtn.textContent = '高';
+        } else if (priority === 2 || priority === 'yellow') {
+            editPriorityBtn.classList.add('bg-yellow-500');
+            editPriorityBtn.textContent = '中';
+        } else {
+            editPriorityBtn.classList.add('bg-green-500');
+            editPriorityBtn.textContent = '低';
+        }
     }
     editTaskModal.classList.remove('hidden');
 }
@@ -137,7 +157,8 @@ function closeEditModal() {
     currentEditingTaskId = null;
     if (editTaskForm) editTaskForm.reset();
     if (editPriorityBtn) {
-        editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300';
+        editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
+        editPriorityBtn.textContent = '低';
     }
 }
 
@@ -147,12 +168,18 @@ if (editTaskOverlay) editTaskOverlay.addEventListener('click', closeEditModal);
 // Priority toggle in edit modal
 if (editPriorityBtn) {
     editPriorityBtn.addEventListener('click', () => {
-        if (editPriorityBtn.classList.contains('bg-green-500')) {
-            editPriorityBtn.classList.replace('bg-green-500', 'bg-yellow-500');
-        } else if (editPriorityBtn.classList.contains('bg-yellow-500')) {
-            editPriorityBtn.classList.replace('bg-yellow-500', 'bg-red-500');
+        if (editPriorityBtn.textContent.trim() === '低') {
+            editPriorityBtn.classList.remove('bg-green-500');
+            editPriorityBtn.classList.add('bg-yellow-500');
+            editPriorityBtn.textContent = '中';
+        } else if (editPriorityBtn.textContent.trim() === '中') {
+            editPriorityBtn.classList.remove('bg-yellow-500');
+            editPriorityBtn.classList.add('bg-red-500');
+            editPriorityBtn.textContent = '高';
         } else {
-            editPriorityBtn.classList.replace('bg-red-500', 'bg-green-500');
+            editPriorityBtn.classList.remove('bg-red-500');
+            editPriorityBtn.classList.add('bg-green-500');
+            editPriorityBtn.textContent = '低';
         }
     });
 }
@@ -163,10 +190,10 @@ if (draftSaveBtn) {
         if (!currentEditingTaskId) return;
         const newName = editTaskNameInput?.value.trim() || '無題の下書き';
         const newContent = editTaskContentInput?.value.trim() || '';
-        let priority = 'green';
+        let priority = 3;
         if (editPriorityBtn) {
-            if (editPriorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
-            else if (editPriorityBtn.classList.contains('bg-red-500')) priority = 'red';
+            if (editPriorityBtn.textContent.trim() === '高') priority = 1;
+            else if (editPriorityBtn.textContent.trim() === '中') priority = 2;
         }
         try {
             await updateDoc(doc(db, 'task', currentEditingTaskId), {
@@ -192,10 +219,10 @@ if (editTaskForm) {
 
         const newName = editTaskNameInput?.value.trim();
         const newContent = editTaskContentInput?.value.trim();
-        let priority = 'green';
+        let priority = 3;
         if (editPriorityBtn) {
-            if (editPriorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
-            else if (editPriorityBtn.classList.contains('bg-red-500')) priority = 'red';
+            if (editPriorityBtn.textContent.trim() === '高') priority = 1;
+            else if (editPriorityBtn.textContent.trim() === '中') priority = 2;
         }
 
         try {
@@ -332,21 +359,27 @@ onAuthStateChanged(auth, (user) => {
 
         taskList.innerHTML = '';
 
+        // ドキュメントを配列化して優先度順（赤1→黄2→緑3）にソート
+        const tasks = [];
         snapshot.forEach((taskDoc) => {
+            tasks.push(taskDoc);
+        });
+        tasks.sort((a, b) => {
+            const pA = typeof a.data().priority === 'number' ? a.data().priority : (a.data().priority === 'red' ? 1 : (a.data().priority === 'yellow' ? 2 : 3));
+            const pB = typeof b.data().priority === 'number' ? b.data().priority : (b.data().priority === 'red' ? 1 : (b.data().priority === 'yellow' ? 2 : 3));
+            return pA - pB;
+        });
+
+        tasks.forEach((taskDoc) => {
             const data = taskDoc.data();
             const docId = taskDoc.id;
 
-            const card = document.createElement('article');
-            card.className = 'bg-[#F0FFF4] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer fade-in-up';
-            card.dataset.id = docId;
+            const priority = data.priority || 3;
+            const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
 
-            // Priority color mapping
-            const priorityBorderMap = { red: 'border-l-error', yellow: 'border-l-primary-container', green: 'border-l-secondary-fixed-dim' };
-            const priorityBgMap = { red: 'bg-[#FFF0F0]', yellow: 'bg-[#FFF9E6]', green: 'bg-[#F0FFF4]' };
-            const priority = data.priority || 'green';
-            card.className = card.className
-                .replace('border-l-secondary-fixed-dim', priorityBorderMap[priority] || 'border-l-secondary-fixed-dim')
-                .replace('bg-[#F0FFF4]', priorityBgMap[priority] || 'bg-[#F0FFF4]');
+            const card = document.createElement('article');
+            card.className = `dynamic-task ${style.bg} rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 ${style.border} hover:scale-[1.02] cursor-pointer fade-in-up`;
+            card.dataset.id = docId;
 
             card.innerHTML = `
                 <!-- Checkbox -->

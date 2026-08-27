@@ -187,10 +187,10 @@ if (draftEditBtn) {
         if (!currentEditingTaskId) return;
         const newName = editTaskNameInput?.value.trim() || '無題の下書き';
         const newContent = editTaskContentInput?.value.trim() || '';
-        let priority = 'green';
+        let priority = 3;
         if (editPriorityBtn) {
-            if (editPriorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
-            else if (editPriorityBtn.classList.contains('bg-red-500')) priority = 'red';
+            if (editPriorityBtn.textContent.trim() === '高') priority = 1;
+            else if (editPriorityBtn.textContent.trim() === '中') priority = 2;
         }
         try {
             await updateDoc(doc(db, "task", currentEditingTaskId), {
@@ -262,17 +262,12 @@ if (newTaskForm) {
         e.preventDefault();
         const taskName = document.getElementById('taskName').value;
         const taskContent = document.getElementById('taskContent').value;
-        let priority = 'green';
-        if (priorityBtn) {
-            if (priorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
-            else if (priorityBtn.classList.contains('bg-red-500')) priority = 'red';
-        }
 
-        // 優先度ボタンの色から数値を取得
+        // 優先度ボタンのテキストから数値を取得（1: 高, 2: 中, 3: 低）
         let priority = 3; // デフォルト: 緑（低）
         if (priorityBtn) {
-            if (priorityBtn.textContent === '高') priority = 1;
-            else if (priorityBtn.textContent === '中') priority = 2;
+            if (priorityBtn.textContent.trim() === '高') priority = 1;
+            else if (priorityBtn.textContent.trim() === '中') priority = 2;
         }
 
         try {
@@ -286,8 +281,7 @@ if (newTaskForm) {
                 isDeleted: false,
                 isCompleted: false,
                 createdAt: new Date(),
-                userId: auth.currentUser.uid,
-                priority: priority
+                userId: auth.currentUser.uid
             });
             closeNewTaskModal();
         } catch (error) {
@@ -303,10 +297,12 @@ if (draftTaskBtn) {
     draftTaskBtn.addEventListener('click', async () => {
         const taskName = document.getElementById('taskName')?.value?.trim() || '無題の下書き';
         const taskContent = document.getElementById('taskContent')?.value?.trim() || '';
-        let priority = 'green';
+
+        // 優先度ボタンのテキストから数値を取得（1: 高, 2: 中, 3: 低）
+        let priority = 3;
         if (priorityBtn) {
-            if (priorityBtn.classList.contains('bg-yellow-500')) priority = 'yellow';
-            else if (priorityBtn.classList.contains('bg-red-500')) priority = 'red';
+            if (priorityBtn.textContent.trim() === '高') priority = 1;
+            else if (priorityBtn.textContent.trim() === '中') priority = 2;
         }
 
         try {
