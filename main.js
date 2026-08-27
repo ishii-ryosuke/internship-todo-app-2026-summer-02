@@ -27,6 +27,13 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+// 優先度別のカードスタイル定義
+const PRIORITY_STYLES = {
+    1: { bg: 'bg-[#FFF0F0]', border: 'border-l-error' },            // 赤 (高)
+    2: { bg: 'bg-[#FFF9E6]', border: 'border-l-primary-container' }, // 黄 (中)
+    3: { bg: 'bg-[#F0FFF4]', border: 'border-l-secondary-fixed-dim' }  // 緑 (低)
+};
+
 // Simple Sidebar Toggle Logic
 const profileBtn = document.getElementById('profile-btn');
 const closeNavBtn = document.getElementById('close-nav');
@@ -91,7 +98,9 @@ function closeNewTaskModal() {
         if (newTaskForm) newTaskForm.reset();
         // Reset priority button to default green
         if (priorityBtn) {
-            priorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300';
+            priorityBtn.className = 'w-8 h-8 rounded-full flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-on-surface-variant';
+            priorityBtn.style.backgroundColor = '#f0fff4';
+            priorityBtn.textContent = '低';
         }
     }
 }
@@ -103,15 +112,16 @@ if (newTaskOverlay) newTaskOverlay.addEventListener('click', closeNewTaskModal);
 // Priority Toggle Logic (Visual only)
 if (priorityBtn) {
     priorityBtn.addEventListener('click', () => {
-        if (priorityBtn.classList.contains('bg-green-500')) {
-            priorityBtn.classList.remove('bg-green-500');
-            priorityBtn.classList.add('bg-yellow-500');
-        } else if (priorityBtn.classList.contains('bg-yellow-500')) {
-            priorityBtn.classList.remove('bg-yellow-500');
-            priorityBtn.classList.add('bg-red-500');
+        const currentText = priorityBtn.textContent.trim();
+        if (priorityBtn.textContent === '低') {
+            priorityBtn.style.backgroundColor = '#fff9e6';
+            priorityBtn.textContent = '中';
+        } else if (priorityBtn.textContent === '中') {
+            priorityBtn.style.backgroundColor = '#fff0f0';
+            priorityBtn.textContent = '高';
         } else {
-            priorityBtn.classList.remove('bg-red-500');
-            priorityBtn.classList.add('bg-green-500');
+            priorityBtn.style.backgroundColor = '#f0fff4';
+            priorityBtn.textContent = '低';
         }
     });
 }
@@ -123,6 +133,13 @@ if (newTaskForm) {
         const taskName = document.getElementById('taskName').value;
         const taskContent = document.getElementById('taskContent').value;
 
+        // 優先度ボタンの色から数値を取得
+        let priority = 3; // デフォルト: 緑（低）
+        if (priorityBtn) {
+            if (priorityBtn.textContent === '高') priority = 1;
+            else if (priorityBtn.textContent === '中') priority = 2;
+        }
+
         try {
             if (!auth.currentUser) return; // Prevent adding if not logged in
 
@@ -131,7 +148,8 @@ if (newTaskForm) {
                 content: taskContent,
                 isDeleted: false,
                 createdAt: new Date(),
-                userId: auth.currentUser.uid
+                userId: auth.currentUser.uid,
+                priority: priority
             });
             closeNewTaskModal();
         } catch (error) {
@@ -188,16 +206,24 @@ if (taskListContainer) {
                 const dynamicTasks = taskListContainer.querySelectorAll('.dynamic-task');
                 dynamicTasks.forEach(task => task.remove());
 
+                // ドキュメントを配列化して優先度順にソート（赤1→黄2→緑3）
+                const tasks = [];
                 snapshot.forEach((taskDoc) => {
+                    tasks.push(taskDoc);
+                });
+                tasks.sort((a, b) => (a.data().priority || 3) - (b.data().priority || 3));
+
+                tasks.forEach((taskDoc) => {
                     const data = taskDoc.data();
                     const taskId = taskDoc.id;
 
-                    // ゴミ箱に入っているタスク（isDeleted: true）は除外
-                    if (data.isDeleted === true) return;
+
+                    const priority = data.priority || 3;
+                    const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
 
                     const article = document.createElement('article');
                     // ドロップダウンがはみ出して表示されるよう、カード自体にrelativeを付与し、メニュー展開時はz-30で前面化
-                    article.className = "dynamic-task bg-[#F0FFF4] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer fade-in-up task-card";
+                    article.className = `dynamic-task ${style.bg} rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 ${style.border} hover:scale-[1.02] cursor-pointer fade-in-up task-card`;
 
                     article.dataset.content = data.content || '';
                     if (data.createdAt) {

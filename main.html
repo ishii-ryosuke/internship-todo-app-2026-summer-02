@@ -218,59 +218,23 @@
             <div id="task-list-container" class="md:col-span-6 flex flex-col gap-sm">
                 <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2">
                     未完了のタスク</h2>
-                <!-- High Priority Task (Red/Rose) -->
-                <article
-                    class="bg-[#FFF0F0] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden hover:opacity-90 transition-colors border-l-4 border-l-error hover:scale-[1.02] cursor-pointer task-card">
-                    <div>
-                        <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
-                    </div>
-                    <div class="flex-grow">
-                        <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title">第3四半期マーケティングプレゼンの仕上げ</span>
-                    </div>
-                    <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                </article>
-                <!-- Medium Priority Task (Yellow/Amber) -->
-                <article
-                    class="bg-[#FFF9E6] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden hover:opacity-90 transition-colors border-l-4 border-l-primary-container hover:scale-[1.02] cursor-pointer task-card">
-                    <div>
-                        <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
-                    </div>
-                    <div class="flex-grow">
-                        <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title">デンバーサミットの航空券予約</span>
-                    </div>
-                    <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                </article>
-                <!-- Low Priority Task (Green) -->
-                <article
-                    class="bg-[#F0FFF4] rounded-lg p-4 flex items-center gap-4 task-card-shadow relative overflow-hidden hover:opacity-90 transition-colors border-l-4 border-l-secondary-fixed-dim hover:scale-[1.02] cursor-pointer task-card">
-                    <div>
-                        <span class="material-symbols-outlined text-tertiary task-icon">crown</span>
-                    </div>
-                    <div class="flex-grow">
-                        <span class="font-body-lg text-body-lg text-on-surface font-semibold block task-title">チームランチの場所予約</span>
-                    </div>
-                    <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
-                        <span class="material-symbols-outlined">more_vert</span>
-                    </button>
-                </article>
             </div>
             <!-- Completed Tasks Column -->
             <div class="md:col-span-6 flex flex-col gap-sm">
                 <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2">完了済み
                 </h2>
                 <!-- Task Card 3 (Completed) -->
-                <article class="bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed">
+                <article
+                    class="bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed">
                     <div>
                         <span class="material-symbols-outlined text-error icon-fill task-icon">crown</span>
                     </div>
                     <div class="flex-grow">
-                        <span class="font-body-lg text-body-lg text-tertiary font-semibold line-through block task-title">週次アップデートメールの送信</span>
+                        <span
+                            class="font-body-lg text-body-lg text-tertiary font-semibold line-through block task-title">週次アップデートメールの送信</span>
                     </div>
-                    <button class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
+                    <button
+                        class="ml-auto text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
                         <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </article>
@@ -359,25 +323,29 @@
             <div class="absolute inset-0 bg-pattern opacity-[0.15]"></div>
         </div>
         <!-- Modal Content -->
-        <div class="relative z-10 bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-8 overflow-hidden transition-all duration-300 mx-4">
+        <div
+            class="relative z-10 bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-8 overflow-hidden transition-all duration-300 mx-4">
             <!-- Left priority indicator -->
-            <div id="task-details-priority-indicator" class="absolute left-0 top-0 bottom-0 w-1 bg-secondary-fixed-dim"></div>
-            
+            <div id="task-details-priority-indicator" class="absolute left-0 top-0 bottom-0 w-1 bg-secondary-fixed-dim">
+            </div>
+
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h2 id="task-details-title" class="font-headline-md text-headline-md text-on-surface mb-2">タスク名</h2>
                     <p id="task-details-date" class="font-label-sm text-label-sm text-on-surface-variant"></p>
                 </div>
-                <button id="close-task-details-btn" class="text-on-surface-variant hover:bg-surface-variant p-2 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
+                <button id="close-task-details-btn"
+                    class="text-on-surface-variant hover:bg-surface-variant p-2 rounded-full transition-colors flex-shrink-0 flex items-center justify-center">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-            
+
             <div class="space-y-6">
                 <!-- Content -->
                 <div>
                     <h3 class="font-label-bold text-label-bold text-on-surface mb-2">内容</h3>
-                    <div id="task-details-content" class="p-4 rounded-md bg-surface-container-low text-on-surface font-body-md text-body-md min-h-[100px] whitespace-pre-wrap">
+                    <div id="task-details-content"
+                        class="p-4 rounded-md bg-surface-container-low text-on-surface font-body-md text-body-md min-h-[100px] whitespace-pre-wrap">
                         タスクの詳細内容がここに表示されます。
                     </div>
                 </div>
@@ -392,7 +360,8 @@
             <div class="absolute inset-0 bg-pattern opacity-[0.15]"></div>
         </div>
         <!-- Modal Content -->
-        <div class="relative z-10 bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-8 overflow-hidden transition-all duration-300 mx-4">
+        <div
+            class="relative z-10 bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-8 overflow-hidden transition-all duration-300 mx-4">
             <!-- Left priority indicator -->
             <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
             <div class="mb-8">
@@ -401,27 +370,46 @@
             <form id="new-task-form" class="space-y-6">
                 <!-- Task Name -->
                 <div>
-                    <label class="block font-label-bold text-label-bold text-on-surface mb-2" for="taskName">タスク名</label>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="font-label-bold text-label-bold text-on-surface"
+                            for="taskName">タスク名</label>
+                        <span class="font-label-bold text-label-bold text-on-surface-variant">優先度</span>
+                    </div>
                     <div class="flex items-center gap-3">
-                        <input class="flex-grow h-12 px-4 rounded-md border border-outline-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder:text-on-surface-variant/50 font-body-md text-body-md" id="taskName" placeholder="例：プロジェクトの進捗確認" type="text" required />
-                        <button aria-label="Toggle priority" class="w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300" id="priorityBtn" type="button"></button>
+                        <input
+                            class="flex-grow h-12 px-4 rounded-md border border-outline-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder:text-on-surface-variant/50 font-body-md text-body-md"
+                            id="taskName" placeholder="例：プロジェクトの進捗確認" type="text" required />
+                        <button aria-label="Toggle priority"
+                            class="w-8 h-8 rounded-full flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-on-surface-variant"
+                            id="priorityBtn" type="button" style="background-color: #f0fff4;">低</button>
                     </div>
                 </div>
                 <!-- Content -->
                 <div>
-                    <label class="block font-label-bold text-label-bold text-on-surface mb-2" for="taskContent">内容</label>
-                    <textarea class="w-full p-4 rounded-md border border-outline-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder:text-on-surface-variant/50 font-body-md text-body-md resize-y" id="taskContent" placeholder="タスクの詳細を記入してください..." rows="5"></textarea>
+                    <label class="block font-label-bold text-label-bold text-on-surface mb-2"
+                        for="taskContent">内容</label>
+                    <textarea
+                        class="w-full p-4 rounded-md border border-outline-variant bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow placeholder:text-on-surface-variant/50 font-body-md text-body-md resize-y"
+                        id="taskContent" placeholder="タスクの詳細を記入してください..." rows="5"></textarea>
                 </div>
                 <!-- Action Buttons -->
-                <div class="flex flex-col sm:flex-row justify-end items-center pt-6 gap-4 border-t border-surface-variant">
-                    <button id="cancel-task-btn" class="w-full sm:w-auto px-6 py-3 rounded-full border-2 border-primary text-primary font-label-bold text-label-bold hover:bg-primary/5 active:scale-95 transition-all duration-200" type="button">
+                <div
+                    class="flex flex-col sm:flex-row justify-end items-center pt-6 gap-4 border-t border-surface-variant">
+                    <button id="cancel-task-btn"
+                        class="w-full sm:w-auto px-6 py-3 rounded-full border-2 border-primary text-primary font-label-bold text-label-bold hover:bg-primary/5 active:scale-95 transition-all duration-200"
+                        type="button">
                         キャンセル
                     </button>
-                    <button class="w-full sm:w-auto px-6 py-3 rounded-full bg-secondary-container text-on-secondary-container font-label-bold text-label-bold hover:bg-secondary-fixed active:scale-95 transition-all duration-200" type="button">
+                    <button
+                        class="w-full sm:w-auto px-6 py-3 rounded-full bg-secondary-container text-on-secondary-container font-label-bold text-label-bold hover:bg-secondary-fixed active:scale-95 transition-all duration-200"
+                        type="button">
                         下書き保存
                     </button>
-                    <button class="w-full sm:w-auto px-8 py-3 rounded-full bg-primary text-on-primary font-label-bold text-label-bold hover:bg-surface-tint shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2" type="submit">
-                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_task</span>
+                    <button
+                        class="w-full sm:w-auto px-8 py-3 rounded-full bg-primary text-on-primary font-label-bold text-label-bold hover:bg-surface-tint shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
+                        type="submit">
+                        <span class="material-symbols-outlined"
+                            style="font-variation-settings: 'FILL' 1;">add_task</span>
                         追加
                     </button>
                 </div>
