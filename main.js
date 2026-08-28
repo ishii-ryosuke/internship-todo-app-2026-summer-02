@@ -438,7 +438,7 @@ function createTaskElement(data, taskId, isCompleted) {
                     ${escapeHtml(formatDueDate(data.dueDate))}
                 </div>
             ` : ''}
-            <span class="font-body-lg text-body-lg font-semibold block task-title break-words ${titleClass}">
+            <span class="font-body-lg text-body-lg font-semibold block task-title break-all ${titleClass}" style="overflow-wrap: anywhere;">
                 ${escapeHtml(data.name || '無題のタスク')}
             </span>
         </div>
