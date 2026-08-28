@@ -403,7 +403,7 @@ async function handleDeleteTask(taskId) {
 }
 
 // タスクカード要素を作成するヘルパー関数
-function createTaskElement(data, taskId, isCompleted) {
+function createTaskElement(data, taskId, isCompleted, isRecent = false) {
     const priority = data.priority || 3;
     const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
 
@@ -414,15 +414,20 @@ function createTaskElement(data, taskId, isCompleted) {
     article.dataset.priority = priority;
     article.dataset.dueDate = data.dueDate || '';
 
-    if (isCompleted) {
-        article.className = "dynamic-task bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed hover:opacity-90 transition-colors hover:scale-[1.02] relative group w-full";
-    } else {
-        article.className = `dynamic-task ${style.bg} rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 ${style.border} hover:scale-[1.02] cursor-pointer fade-in-up task-card w-full`;
-    }
-
     if (data.createdAt) {
         const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
         article.dataset.createdAt = date.toLocaleString('ja-JP');
+    }
+
+    if (!isCompleted) {
+        // 未完了タスク：優先度別カラー
+        article.className = `dynamic-task ${style.bg} rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 ${style.border} hover:scale-[1.02] cursor-pointer fade-in-up task-card w-full`;
+    } else if (isRecent) {
+        // 最近完了（1分以内）：白色ハイライト
+        article.className = 'dynamic-task recent-completed-card bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 border-l-primary hover:scale-[1.02] cursor-pointer fade-in-up task-card w-full';
+    } else {
+        // 通常完了（1分以上）：グレー
+        article.className = 'dynamic-task bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed hover:opacity-90 transition-colors hover:scale-[1.02] relative group w-full';
     }
 
     const iconClass = isCompleted ? "text-error icon-fill" : "text-tertiary";
@@ -442,7 +447,6 @@ function createTaskElement(data, taskId, isCompleted) {
                 ${escapeHtml(data.name || '無題のタスク')}
             </span>
         </div>
-        
         <!-- Three-dot Menu Container (z-index managed) -->
         <div class="relative self-center ml-auto task-menu-container flex-shrink-0">
             <button type="button" class="task-menu-btn text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex items-center justify-center" aria-label="タスク操作メニュー">
@@ -497,6 +501,9 @@ function createTaskElement(data, taskId, isCompleted) {
 const taskListContainer = document.getElementById('task-list-container');
 const completedTaskListContainer = document.getElementById('completed-task-list-container');
 
+// 「最近完了」タイマーを管理するMap（taskId → timeoutId）
+const recentCompletedTimers = new Map();
+
 if (taskListContainer && completedTaskListContainer) {
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -509,7 +516,11 @@ if (taskListContainer && completedTaskListContainer) {
                 const expiredTasks = [];
                 const todayTasks = [];
                 const otherIncompleteTasks = [];
-                const completedTasks = [];
+                const recentlyCompletedTasks = []; // 1分以内
+                const oldCompletedTasks = [];      // 1分以上
+
+                const now = Date.now();
+                const ONE_MINUTE_MS = 60 * 1000;
 
                 snapshot.forEach((taskDoc) => {
                     const data = taskDoc.data();
@@ -521,9 +532,7 @@ if (taskListContainer && completedTaskListContainer) {
                     const isCompleted = data.isCompleted || false;
                     const item = { taskDoc, data, taskId };
 
-                    if (isCompleted) {
-                        completedTasks.push(item);
-                    } else {
+                    if (!isCompleted) {
                         const status = getDueDateStatus(data.dueDate);
                         if (status === 'expired') {
                             expiredTasks.push(item);
@@ -531,6 +540,18 @@ if (taskListContainer && completedTaskListContainer) {
                             todayTasks.push(item);
                         } else {
                             otherIncompleteTasks.push(item);
+                        }
+                    } else {
+                        // completedAt の経過時間を判定
+                        let completedMs = null;
+                        if (data.completedAt) {
+                            const completedDate = data.completedAt.toDate ? data.completedAt.toDate() : new Date(data.completedAt);
+                            completedMs = now - completedDate.getTime();
+                        }
+                        if (completedMs !== null && completedMs < ONE_MINUTE_MS) {
+                            recentlyCompletedTasks.push({ item, remainingMs: ONE_MINUTE_MS - completedMs });
+                        } else {
+                            oldCompletedTasks.push(item);
                         }
                     }
                 });
@@ -561,7 +582,8 @@ if (taskListContainer && completedTaskListContainer) {
                 });
 
                 // 4. 完了済みタスクのソート：優先度順（1→2→3）
-                completedTasks.sort((a, b) => (a.data.priority || 3) - (b.data.priority || 3));
+                recentlyCompletedTasks.sort((a, b) => (a.item.data.priority || 3) - (b.item.data.priority || 3));
+                oldCompletedTasks.sort((a, b) => (a.data.priority || 3) - (b.data.priority || 3));
 
                 // --- レンダリング：未完了タスク ---
                 // ① 期限切れタスクの描画（赤色に塗りつぶした赤枠コンテナでグルーピング）
@@ -604,10 +626,59 @@ if (taskListContainer && completedTaskListContainer) {
                     taskListContainer.appendChild(el);
                 });
 
-                // --- レンダリング：完了済みタスク ---
-                completedTasks.forEach(({ data, taskId }) => {
-                    const el = createTaskElement(data, taskId, true);
-                    completedTaskListContainer.appendChild(el);
+                // ===== 完了済みエリアのレンダリング =====
+
+                // 「最近完了」セクション（1分以内）
+                if (recentlyCompletedTasks.length > 0) {
+                    const recentSection = document.createElement('div');
+                    recentSection.className = 'dynamic-task recent-completed-section mb-2';
+                    recentSection.innerHTML = `<span class="text-xs font-bold text-on-surface uppercase tracking-widest flex items-center gap-1 mb-2"><span class="text-base">🎉</span> たった今完了！</span>`;
+                    completedTaskListContainer.appendChild(recentSection);
+
+                    recentlyCompletedTasks.forEach(({ item, remainingMs }) => {
+                        const article = createTaskElement(item.data, item.taskId, true, true);
+                        completedTaskListContainer.appendChild(article);
+
+                        // 残り時間後に自動でDOM更新（onSnapshotを再トリガー）
+                        const taskId = item.taskId;
+                        if (recentCompletedTimers.has(taskId)) {
+                            clearTimeout(recentCompletedTimers.get(taskId));
+                        }
+                        const timerId = setTimeout(() => {
+                            recentCompletedTimers.delete(taskId);
+                            
+                            // 対象のカード（article）を通常の完了済みスタイルに置き換える
+                            const normalArticle = createTaskElement(item.data, item.taskId, true, false);
+                            
+                            // 古いカードを置換
+                            if (article && article.parentNode) {
+                                article.parentNode.replaceChild(normalArticle, article);
+                            }
+                            
+                            // 「たった今完了！」ラベルだけが残ってしまったらラベルごと消す
+                            const oldSection = completedTaskListContainer.querySelector('.recent-completed-section');
+                            if (oldSection) {
+                                const remainingRecentTasks = Array.from(completedTaskListContainer.querySelectorAll('article')).filter(el => el.classList.contains('recent-completed-card'));
+                                if (remainingRecentTasks.length === 0) {
+                                    oldSection.remove();
+                                }
+                            }
+                        }, remainingMs + 100);
+                        recentCompletedTimers.set(taskId, timerId);
+                    });
+
+                    // 区切り線
+                    if (oldCompletedTasks.length > 0) {
+                        const divider = document.createElement('div');
+                        divider.className = 'dynamic-task border-t border-outline-variant/40 my-3';
+                        completedTaskListContainer.appendChild(divider);
+                    }
+                }
+
+                // 通常完了タスク（1分以上経過）
+                oldCompletedTasks.forEach(({ data, taskId }) => {
+                    const article = createTaskElement(data, taskId, true, false);
+                    completedTaskListContainer.appendChild(article);
                 });
             });
         }
@@ -679,7 +750,8 @@ document.addEventListener('click', async (e) => {
                 try {
                     // Firestoreのデータを更新（リアルタイムリスナーが反応して自動で移動します）
                     await updateDoc(doc(db, "task", taskId), {
-                        isCompleted: !isCompleted
+                        isCompleted: !isCompleted,
+                        completedAt: !isCompleted ? serverTimestamp() : null
                     });
                 } catch (error) {
                     console.error("Error updating task status:", error);
