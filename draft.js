@@ -37,6 +37,7 @@ const editTaskOverlay = document.getElementById('edit-task-overlay');
 const editTaskForm = document.getElementById('edit-task-form');
 const editTaskNameInput = document.getElementById('editTaskName');
 const editTaskContentInput = document.getElementById('editTaskContent');
+const editTaskDueDateInput = document.getElementById('editTaskDueDate');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const draftSaveBtn = document.getElementById('draft-save-btn');
 const editPriorityBtn = document.getElementById('editPriorityBtn');
@@ -57,6 +58,16 @@ const PRIORITY_STYLES = {
     yellow: { bg: 'bg-[#FFF9E6]', border: 'border-l-primary-container' },
     green: { bg: 'bg-[#F0FFF4]', border: 'border-l-secondary-fixed-dim' }
 };
+
+// 期限日フォーマット (YYYY-MM-DD -> MM/DD)
+function formatDueDate(dueDateStr) {
+    if (!dueDateStr) return '';
+    const parts = dueDateStr.split('-');
+    if (parts.length === 3) {
+        return `${parts[1]}/${parts[2]}`;
+    }
+    return dueDateStr;
+}
 
 // ============================================================
 // Helpers
@@ -135,6 +146,7 @@ function openEditModal(taskId, taskData) {
     currentEditingTaskId = taskId;
     if (editTaskNameInput) editTaskNameInput.value = taskData.name || '';
     if (editTaskContentInput) editTaskContentInput.value = taskData.content || '';
+    if (editTaskDueDateInput) editTaskDueDateInput.value = taskData.dueDate || '';
     if (editPriorityBtn) {
         const priority = taskData.priority || 3;
         editPriorityBtn.className = 'w-8 h-8 rounded-full flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
@@ -156,6 +168,7 @@ function closeEditModal() {
     editTaskModal.classList.add('hidden');
     currentEditingTaskId = null;
     if (editTaskForm) editTaskForm.reset();
+    if (editTaskDueDateInput) editTaskDueDateInput.value = '';
     if (editPriorityBtn) {
         editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
         editPriorityBtn.textContent = '低';
@@ -190,6 +203,7 @@ if (draftSaveBtn) {
         if (!currentEditingTaskId) return;
         const newName = editTaskNameInput?.value.trim() || '無題の下書き';
         const newContent = editTaskContentInput?.value.trim() || '';
+        const newDueDate = editTaskDueDateInput?.value || null;
         let priority = 3;
         if (editPriorityBtn) {
             if (editPriorityBtn.textContent.trim() === '高') priority = 1;
@@ -199,6 +213,7 @@ if (draftSaveBtn) {
             await updateDoc(doc(db, 'task', currentEditingTaskId), {
                 name: newName,
                 content: newContent,
+                dueDate: newDueDate,
                 priority: priority,
                 status: 'draft',
                 updatedAt: serverTimestamp()
@@ -219,6 +234,7 @@ if (editTaskForm) {
 
         const newName = editTaskNameInput?.value.trim();
         const newContent = editTaskContentInput?.value.trim();
+        const newDueDate = editTaskDueDateInput?.value || null;
         let priority = 3;
         if (editPriorityBtn) {
             if (editPriorityBtn.textContent.trim() === '高') priority = 1;
@@ -229,6 +245,7 @@ if (editTaskForm) {
             await updateDoc(doc(db, 'task', currentEditingTaskId), {
                 name: newName,
                 content: newContent,
+                dueDate: newDueDate,
                 priority: priority,
                 status: 'published',
                 updatedAt: serverTimestamp()
@@ -392,6 +409,11 @@ onAuthStateChanged(auth, (user) => {
 
                 <!-- Task Title -->
                 <div class="flex-grow min-w-0">
+                    ${data.dueDate ? `
+                        <div class="text-xs text-on-surface-variant font-medium mb-0.5">
+                            ${escapeHtml(formatDueDate(data.dueDate))}
+                        </div>
+                    ` : ''}
                     <span class="font-body-lg text-body-lg text-on-surface font-semibold block break-words">${escapeHtml(data.name || '無題のタスク')}</span>
                 </div>
 

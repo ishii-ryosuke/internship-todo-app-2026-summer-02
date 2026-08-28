@@ -40,6 +40,34 @@ const PRIORITY_STYLES = {
     3: { bg: 'bg-[#F0FFF4]', border: 'border-l-secondary-fixed-dim' }  // 緑 (低)
 };
 
+// 期限日フォーマット (YYYY-MM-DD -> MM/DD)
+function formatDueDate(dueDateStr) {
+    if (!dueDateStr) return '';
+    const parts = dueDateStr.split('-');
+    if (parts.length === 3) {
+        return `${parts[1]}/${parts[2]}`;
+    }
+    return dueDateStr;
+}
+
+// 今日の日付文字列（YYYY-MM-DD）取得
+function getTodayDateStr() {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+// 期限状態判定 ('expired' | 'today' | 'future' | 'none')
+function getDueDateStatus(dueDateStr) {
+    if (!dueDateStr) return 'none';
+    const today = getTodayDateStr();
+    if (dueDateStr < today) return 'expired';
+    if (dueDateStr === today) return 'today';
+    return 'future';
+}
+
 // Simple Sidebar Toggle Logic
 const profileBtn = document.getElementById('profile-btn');
 const closeNavBtn = document.getElementById('close-nav');
@@ -93,6 +121,7 @@ const newTaskOverlay = document.getElementById('new-task-overlay');
 const cancelTaskBtn = document.getElementById('cancel-task-btn');
 const priorityBtn = document.getElementById('priorityBtn');
 const newTaskForm = document.getElementById('new-task-form');
+const taskDueDateInput = document.getElementById('taskDueDate');
 
 function openNewTaskModal() {
     if (newTaskModal) newTaskModal.classList.remove('hidden');
@@ -102,6 +131,7 @@ function closeNewTaskModal() {
     if (newTaskModal) {
         newTaskModal.classList.add('hidden');
         if (newTaskForm) newTaskForm.reset();
+        if (taskDueDateInput) taskDueDateInput.value = '';
         // Reset priority button to default green
         if (priorityBtn) {
             priorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
@@ -121,6 +151,7 @@ const editTaskOverlay = document.getElementById('edit-task-overlay');
 const editTaskForm = document.getElementById('edit-task-form');
 const editTaskNameInput = document.getElementById('editTaskName');
 const editTaskContentInput = document.getElementById('editTaskContent');
+const editTaskDueDateInput = document.getElementById('editTaskDueDate');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const draftEditBtn = document.getElementById('draft-edit-btn');
 const editPriorityBtn = document.getElementById('editPriorityBtn');
@@ -131,6 +162,7 @@ function openEditTaskModal(taskId, taskData) {
     currentEditingTaskId = taskId;
     if (editTaskNameInput) editTaskNameInput.value = taskData.name || '';
     if (editTaskContentInput) editTaskContentInput.value = taskData.content || '';
+    if (editTaskDueDateInput) editTaskDueDateInput.value = taskData.dueDate || '';
     // 優先度の初期値反映
     if (editPriorityBtn) {
         const priority = taskData.priority || 3;
@@ -153,6 +185,7 @@ function closeEditTaskModal() {
     if (editTaskModal) editTaskModal.classList.add('hidden');
     currentEditingTaskId = null;
     if (editTaskForm) editTaskForm.reset();
+    if (editTaskDueDateInput) editTaskDueDateInput.value = '';
     if (editPriorityBtn) {
         editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
         editPriorityBtn.textContent = '低';
@@ -187,6 +220,7 @@ if (draftEditBtn) {
         if (!currentEditingTaskId) return;
         const newName = editTaskNameInput?.value.trim() || '無題の下書き';
         const newContent = editTaskContentInput?.value.trim() || '';
+        const newDueDate = editTaskDueDateInput?.value || null;
         let priority = 3;
         if (editPriorityBtn) {
             if (editPriorityBtn.textContent.trim() === '高') priority = 1;
@@ -196,6 +230,7 @@ if (draftEditBtn) {
             await updateDoc(doc(db, "task", currentEditingTaskId), {
                 name: newName,
                 content: newContent,
+                dueDate: newDueDate,
                 priority: priority,
                 status: 'draft',
                 updatedAt: serverTimestamp()
@@ -215,6 +250,7 @@ if (editTaskForm) {
         if (!currentEditingTaskId) return;
         const newName = editTaskNameInput?.value.trim();
         const newContent = editTaskContentInput?.value.trim();
+        const newDueDate = editTaskDueDateInput?.value || null;
         let priority = 3;
         if (editPriorityBtn) {
             if (editPriorityBtn.textContent === '高') priority = 1;
@@ -224,6 +260,7 @@ if (editTaskForm) {
             await updateDoc(doc(db, "task", currentEditingTaskId), {
                 name: newName,
                 content: newContent,
+                dueDate: newDueDate,
                 priority: priority,
                 status: 'published',
                 updatedAt: serverTimestamp()
@@ -262,6 +299,7 @@ if (newTaskForm) {
         e.preventDefault();
         const taskName = document.getElementById('taskName').value;
         const taskContent = document.getElementById('taskContent').value;
+        const taskDueDate = taskDueDateInput?.value || null;
 
         // 優先度ボタンのテキストから数値を取得（1: 高, 2: 中, 3: 低）
         let priority = 3; // デフォルト: 緑（低）
@@ -276,6 +314,7 @@ if (newTaskForm) {
             await addDoc(collection(db, "task"), {
                 name: taskName,
                 content: taskContent,
+                dueDate: taskDueDate,
                 priority: priority,
                 status: 'published',
                 isDeleted: false,
@@ -297,6 +336,7 @@ if (draftTaskBtn) {
     draftTaskBtn.addEventListener('click', async () => {
         const taskName = document.getElementById('taskName')?.value?.trim() || '無題の下書き';
         const taskContent = document.getElementById('taskContent')?.value?.trim() || '';
+        const taskDueDate = taskDueDateInput?.value || null;
 
         // 優先度ボタンのテキストから数値を取得（1: 高, 2: 中, 3: 低）
         let priority = 3;
@@ -311,6 +351,7 @@ if (draftTaskBtn) {
             await addDoc(collection(db, "task"), {
                 name: taskName,
                 content: taskContent,
+                dueDate: taskDueDate,
                 priority: priority,
                 status: 'draft',
                 isDeleted: false,
@@ -361,6 +402,97 @@ async function handleDeleteTask(taskId) {
     }
 }
 
+// タスクカード要素を作成するヘルパー関数
+function createTaskElement(data, taskId, isCompleted) {
+    const priority = data.priority || 3;
+    const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
+
+    const article = document.createElement('article');
+    article.dataset.taskId = taskId;
+    article.dataset.isCompleted = isCompleted;
+    article.dataset.content = data.content || '';
+    article.dataset.priority = priority;
+    article.dataset.dueDate = data.dueDate || '';
+
+    if (isCompleted) {
+        article.className = "dynamic-task bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed hover:opacity-90 transition-colors hover:scale-[1.02] relative group w-full";
+    } else {
+        article.className = `dynamic-task ${style.bg} rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 ${style.border} hover:scale-[1.02] cursor-pointer fade-in-up task-card w-full`;
+    }
+
+    if (data.createdAt) {
+        const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+        article.dataset.createdAt = date.toLocaleString('ja-JP');
+    }
+
+    const iconClass = isCompleted ? "text-error icon-fill" : "text-tertiary";
+    const titleClass = isCompleted ? "text-tertiary line-through" : "text-on-surface";
+
+    article.innerHTML = `
+        <div>
+            <span class="material-symbols-outlined ${iconClass} task-icon">crown</span>
+        </div>
+        <div class="flex-grow min-w-0">
+            ${data.dueDate ? `
+                <div class="text-xs text-on-surface-variant font-medium mb-0.5">
+                    ${escapeHtml(formatDueDate(data.dueDate))}
+                </div>
+            ` : ''}
+            <span class="font-body-lg text-body-lg font-semibold block task-title break-words ${titleClass}">
+                ${escapeHtml(data.name || '無題のタスク')}
+            </span>
+        </div>
+        
+        <!-- Three-dot Menu Container (z-index managed) -->
+        <div class="relative self-center ml-auto task-menu-container flex-shrink-0">
+            <button type="button" class="task-menu-btn text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex items-center justify-center" aria-label="タスク操作メニュー">
+                <span class="material-symbols-outlined">more_vert</span>
+            </button>
+            <!-- Dropdown Menu (z-50, shadow-xl) -->
+            <div class="task-dropdown-menu hidden absolute right-0 top-full mt-1 w-32 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/40 py-1 z-50">
+                <button type="button" class="task-edit-btn w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-container flex items-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                    編集
+                </button>
+                <button type="button" class="task-delete-btn w-full text-left px-4 py-2 text-sm text-error hover:bg-error-container/40 flex items-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                    削除
+                </button>
+            </div>
+        </div>
+    `;
+
+    // イベントリスナーの登録
+    const menuBtn = article.querySelector('.task-menu-btn');
+    const dropdownMenu = article.querySelector('.task-dropdown-menu');
+    const editBtn = article.querySelector('.task-edit-btn');
+    const deleteBtn = article.querySelector('.task-delete-btn');
+
+    menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = dropdownMenu.classList.contains('hidden');
+        closeAllTaskMenus();
+        if (isHidden) {
+            dropdownMenu.classList.remove('hidden');
+            article.classList.add('z-30');
+        }
+    });
+
+    editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeAllTaskMenus();
+        handleEditTask(taskId, data);
+    });
+
+    deleteBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        closeAllTaskMenus();
+        await handleDeleteTask(taskId);
+    });
+
+    return article;
+}
+
 // Real-time listener for tasks
 const taskListContainer = document.getElementById('task-list-container');
 const completedTaskListContainer = document.getElementById('completed-task-list-container');
@@ -374,114 +506,108 @@ if (taskListContainer && completedTaskListContainer) {
                 taskListContainer.querySelectorAll('.dynamic-task').forEach(task => task.remove());
                 completedTaskListContainer.querySelectorAll('.dynamic-task').forEach(task => task.remove());
 
-                // ドキュメントを配列化して優先度順にソート（赤1→黄2→緑3）
-                const tasks = [];
-                snapshot.forEach((taskDoc) => {
-                    tasks.push(taskDoc);
-                });
-                tasks.sort((a, b) => (a.data().priority || 3) - (b.data().priority || 3));
+                const expiredTasks = [];
+                const todayTasks = [];
+                const otherIncompleteTasks = [];
+                const completedTasks = [];
 
-                tasks.forEach((taskDoc) => {
+                snapshot.forEach((taskDoc) => {
                     const data = taskDoc.data();
                     const taskId = taskDoc.id;
 
                     // ゴミ箱に入っているタスク（isDeleted: true）および下書き（status: 'draft'）は除外
                     if (data.isDeleted === true || data.status === 'draft') return;
 
-                    const priority = data.priority || 3;
-                    const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
-
                     const isCompleted = data.isCompleted || false;
-
-                    // ゴミ箱に入っているタスク（isDeleted: true）は除外
-                    if (data.isDeleted === true) return;
-
-                    const article = document.createElement('article');
-                    article.dataset.taskId = taskId;
-                    article.dataset.isCompleted = isCompleted;
+                    const item = { taskDoc, data, taskId };
 
                     if (isCompleted) {
-                        article.className = "dynamic-task bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed hover:opacity-90 transition-colors hover:scale-[1.02] relative group";
+                        completedTasks.push(item);
                     } else {
-                        article.className = `dynamic-task ${style.bg} rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 ${style.border} hover:scale-[1.02] cursor-pointer fade-in-up task-card`;
-                    }
-
-                    article.dataset.content = data.content || '';
-                    article.dataset.priority = priority;
-                    if (data.createdAt) {
-                        const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-                        article.dataset.createdAt = date.toLocaleString('ja-JP');
-                    }
-
-                    // アイコンとタイトルのスタイルを完了状態に応じて変更
-                    const iconClass = isCompleted ? "text-error icon-fill" : "text-tertiary";
-                    const titleClass = isCompleted ? "text-tertiary line-through" : "text-on-surface";
-
-                    article.innerHTML = `
-                        <div>
-                            <span class="material-symbols-outlined ${iconClass} task-icon">crown</span>
-                        </div>
-                        <div class="flex-grow min-w-0">
-                            <span class="font-body-lg text-body-lg font-semibold block task-title break-words ${titleClass}">
-                                ${escapeHtml(data.name || '無題のタスク')}
-                            </span>
-                        </div>
-                        
-                <!-- Three-dot Menu Container (z-index managed) -->
-                <div class="relative self-center ml-auto task-menu-container flex-shrink-0">
-                    <button type="button" class="task-menu-btn text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex items-center justify-center" aria-label="タスク操作メニュー">
-                                <span class="material-symbols-outlined">more_vert</span>
-                            </button>
-                            <!-- Dropdown Menu (z-50, shadow-xl) -->
-                    <div class="task-dropdown-menu hidden absolute right-0 top-full mt-1 w-32 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/40 py-1 z-50">
-                        <button type="button" class="task-edit-btn w-full text-left px-4 py-2 text-sm text-on-surface hover:bg-surface-container flex items-center gap-2 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">edit</span>
-                            編集
-                        </button>
-                        <button type="button" class="task-delete-btn w-full text-left px-4 py-2 text-sm text-error hover:bg-error-container/40 flex items-center gap-2 transition-colors">
-                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                            削除
-                        </button>
-                    </div>
-                </div>
-            `;
-
-                    // イベントリスナーの登録
-                    const menuBtn = article.querySelector('.task-menu-btn');
-                    const dropdownMenu = article.querySelector('.task-dropdown-menu');
-                    const editBtn = article.querySelector('.task-edit-btn');
-                    const deleteBtn = article.querySelector('.task-delete-btn');
-
-                    // メニュー開閉（開くカードを最前面 z-30 に引き上げる）
-                    menuBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isHidden = dropdownMenu.classList.contains('hidden');
-                        closeAllTaskMenus();
-                        if (isHidden) {
-                            dropdownMenu.classList.remove('hidden');
-                            article.classList.add('z-30');
+                        const status = getDueDateStatus(data.dueDate);
+                        if (status === 'expired') {
+                            expiredTasks.push(item);
+                        } else if (status === 'today') {
+                            todayTasks.push(item);
+                        } else {
+                            otherIncompleteTasks.push(item);
                         }
-                    });
-
-                    // 編集ボタン押下
-                    editBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        closeAllTaskMenus();
-                        handleEditTask(taskId, data);
-                    });
-
-                    // 削除ボタン押下（ゴミ箱移動）
-                    deleteBtn.addEventListener('click', async (e) => {
-                        e.stopPropagation();
-                        closeAllTaskMenus();
-                        await handleDeleteTask(taskId);
-                    });
-
-                    if (isCompleted) {
-                        completedTaskListContainer.appendChild(article);
-                    } else {
-                        taskListContainer.appendChild(article);
                     }
+                });
+
+                // 1. 期限切れタスクのソート：期限が古い順 → 優先度順（1→2→3）
+                expiredTasks.sort((a, b) => {
+                    const dateDiff = (a.data.dueDate || '').localeCompare(b.data.dueDate || '');
+                    if (dateDiff !== 0) return dateDiff;
+                    return (a.data.priority || 3) - (b.data.priority || 3);
+                });
+
+                // 2. 今日が期限のタスクのソート：優先度順（1→2→3）
+                todayTasks.sort((a, b) => (a.data.priority || 3) - (b.data.priority || 3));
+
+                // 3. その他未完了タスクのソート：期限が近い順（未設定は末尾） → 優先度順（1→2→3）
+                otherIncompleteTasks.sort((a, b) => {
+                    const dueA = a.data.dueDate;
+                    const dueB = b.data.dueDate;
+                    if (dueA && dueB) {
+                        const diff = dueA.localeCompare(dueB);
+                        if (diff !== 0) return diff;
+                    } else if (dueA && !dueB) {
+                        return -1;
+                    } else if (!dueA && dueB) {
+                        return 1;
+                    }
+                    return (a.data.priority || 3) - (b.data.priority || 3);
+                });
+
+                // 4. 完了済みタスクのソート：優先度順（1→2→3）
+                completedTasks.sort((a, b) => (a.data.priority || 3) - (b.data.priority || 3));
+
+                // --- レンダリング：未完了タスク ---
+                // ① 期限切れタスクの描画（赤色に塗りつぶした赤枠コンテナでグルーピング）
+                if (expiredTasks.length > 0) {
+                    const expiredContainer = document.createElement('div');
+                    expiredContainer.className = "border-2 border-error rounded-xl p-3 bg-error-container flex flex-col gap-sm dynamic-task shadow-md";
+                    expiredContainer.innerHTML = `
+                        <div class="flex items-center gap-1.5 text-on-error-container font-headline-md text-sm font-bold px-1">
+                            <span class="material-symbols-outlined text-[18px] text-error">warning</span>
+                            <span>期限切れのタスク</span>
+                        </div>
+                    `;
+                    expiredTasks.forEach(({ data, taskId }) => {
+                        const el = createTaskElement(data, taskId, false);
+                        expiredContainer.appendChild(el);
+                    });
+                    taskListContainer.appendChild(expiredContainer);
+                }
+
+                // ② 今日が期限のタスク（赤枠コンテナでグルーピング）
+                if (todayTasks.length > 0) {
+                    const todayContainer = document.createElement('div');
+                    todayContainer.className = "border-2 border-error rounded-xl p-3 bg-error-container/10 flex flex-col gap-sm dynamic-task shadow-sm";
+                    todayContainer.innerHTML = `
+                        <div class="flex items-center gap-1.5 text-error font-label-bold text-sm px-1">
+                            <span class="material-symbols-outlined text-[18px]">event_upcoming</span>
+                            <span>今日が期限のタスク</span>
+                        </div>
+                    `;
+                    todayTasks.forEach(({ data, taskId }) => {
+                        const el = createTaskElement(data, taskId, false);
+                        todayContainer.appendChild(el);
+                    });
+                    taskListContainer.appendChild(todayContainer);
+                }
+
+                // ③ その他の未完了タスク
+                otherIncompleteTasks.forEach(({ data, taskId }) => {
+                    const el = createTaskElement(data, taskId, false);
+                    taskListContainer.appendChild(el);
+                });
+
+                // --- レンダリング：完了済みタスク ---
+                completedTasks.forEach(({ data, taskId }) => {
+                    const el = createTaskElement(data, taskId, true);
+                    completedTaskListContainer.appendChild(el);
                 });
             });
         }
@@ -512,10 +638,15 @@ const taskDetailsContent = document.getElementById('task-details-content');
 const taskDetailsModalContent = document.getElementById('task-details-modal-content');
 const taskDetailsPriorityIndicator = document.getElementById('task-details-priority-indicator');
 
-function openTaskDetailsModal(title, content, dateStr, priorityNum) {
+function openTaskDetailsModal(title, content, dateStr, priorityNum, dueDateStr = '') {
     if (taskDetailsTitle) taskDetailsTitle.textContent = title;
     if (taskDetailsContent) taskDetailsContent.textContent = content || '詳細なし';
-    if (taskDetailsDate) taskDetailsDate.textContent = dateStr || '';
+    
+    let metaText = dateStr ? `作成: ${dateStr}` : '';
+    if (dueDateStr) {
+        metaText += (metaText ? '　|　' : '') + `期限: ${dueDateStr}`;
+    }
+    if (taskDetailsDate) taskDetailsDate.textContent = metaText;
 
     if (taskDetailsModalContent && taskDetailsPriorityIndicator) {
         const priority = priorityNum || 3;
@@ -585,7 +716,8 @@ document.addEventListener('click', async (e) => {
         const content = taskCard.dataset.content || '詳細なし';
         const dateStr = taskCard.dataset.createdAt || '';
         const priority = parseInt(taskCard.dataset.priority) || 3;
-        openTaskDetailsModal(title, content, dateStr, priority);
+        const dueDateStr = taskCard.dataset.dueDate || '';
+        openTaskDetailsModal(title, content, dateStr, priority, dueDateStr);
     }
 });
 
