@@ -270,9 +270,10 @@ onAuthStateChanged(auth, (user) => {
 
                 <!-- Task Content -->
                 <div class="flex-grow min-w-0">
-                    ${data.dueDate ? `
-                        <div class="text-xs text-on-surface-variant font-medium mb-0.5">
-                            ${escapeHtml(formatDueDate(data.dueDate))}
+                    ${(data.dueDate || data.tag) ? `
+                        <div class="text-xs text-on-surface-variant font-medium mb-0.5 flex items-center gap-1">
+                            ${data.dueDate ? `<span>${escapeHtml(formatDueDate(data.dueDate))}</span>` : ''}
+                            ${data.tag ? `<span>${escapeHtml(data.tag)}</span>` : ''}
                         </div>
                     ` : ''}
                     <h3 class="font-body-lg text-body-lg text-on-surface font-semibold break-words">${escapeHtml(data.name || '無題のタスク')}</h3>
