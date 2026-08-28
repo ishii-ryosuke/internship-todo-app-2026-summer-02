@@ -19,7 +19,33 @@ import {
 onAuthStateChanged(auth, (user) => {
     if (!user) {
         window.location.href = 'index.html';
+        return;
     }
+
+    const headerIcon = document.getElementById('header-user-icon');
+    const sidebarIcon = document.getElementById('sidebar-user-icon');
+    const sidebarUserName = document.getElementById('sidebar-user-name');
+    const fallbackSvg = `<svg class="w-3/4 h-3/4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+
+    // Listen to real-time updates of the user document in the "users" collection
+    onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+        let iconContent = fallbackSvg;
+        let displayName = '';
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const name = data.name;
+            if (name && name.trim() !== '') {
+                iconContent = Array.from(name.trim())[0];
+                displayName = name;
+            }
+        }
+
+        if (headerIcon) headerIcon.innerHTML = iconContent;
+        if (sidebarIcon) sidebarIcon.innerHTML = iconContent;
+        if (sidebarUserName) sidebarUserName.textContent = displayName;
+    }, (error) => {
+        console.error("Error fetching user data: ", error);
+    });
 });
 
 // XSS対策用HTMLエスケープ関数
@@ -120,11 +146,14 @@ const newTaskModal = document.getElementById('new-task-modal');
 const newTaskOverlay = document.getElementById('new-task-overlay');
 const cancelTaskBtn = document.getElementById('cancel-task-btn');
 const priorityBtn = document.getElementById('priorityBtn');
+const tagBtn = document.getElementById('tagBtn');
 const newTaskForm = document.getElementById('new-task-form');
 const taskDueDateInput = document.getElementById('taskDueDate');
 
 function openNewTaskModal() {
     if (newTaskModal) newTaskModal.classList.remove('hidden');
+    // 新規作成時のタグデフォルト：就活
+    if (tagBtn) tagBtn.textContent = '就活';
 }
 
 function closeNewTaskModal() {
@@ -138,6 +167,8 @@ function closeNewTaskModal() {
             priorityBtn.style.backgroundColor = '';
             priorityBtn.textContent = '低';
         }
+        // Reset tag button
+        if (tagBtn) tagBtn.textContent = '就活';
     }
 }
 
@@ -155,6 +186,7 @@ const editTaskDueDateInput = document.getElementById('editTaskDueDate');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const draftEditBtn = document.getElementById('draft-edit-btn');
 const editPriorityBtn = document.getElementById('editPriorityBtn');
+const editTagBtn = document.getElementById('editTagBtn');
 
 let currentEditingTaskId = null;
 
@@ -178,6 +210,10 @@ function openEditTaskModal(taskId, taskData) {
             editPriorityBtn.textContent = '低';
         }
     }
+    // タグの初期値反映（設定されていれば既存値、なければ「就活」）
+    if (editTagBtn) {
+        editTagBtn.textContent = taskData.tag || '就活';
+    }
     if (editTaskModal) editTaskModal.classList.remove('hidden');
 }
 
@@ -190,6 +226,7 @@ function closeEditTaskModal() {
         editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
         editPriorityBtn.textContent = '低';
     }
+    if (editTagBtn) editTagBtn.textContent = '就活';
 }
 
 if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditTaskModal);
@@ -214,6 +251,16 @@ if (editPriorityBtn) {
     });
 }
 
+// タグトグル（編集モーダル用）: 就活 → 学校 → その他 → 就活…
+if (editTagBtn) {
+    editTagBtn.addEventListener('click', () => {
+        const cur = editTagBtn.textContent.trim();
+        if (cur === '就活') editTagBtn.textContent = '学校';
+        else if (cur === '学校') editTagBtn.textContent = 'その他';
+        else editTagBtn.textContent = '就活';
+    });
+}
+
 // 編集モーダルの下書き保存ボタン
 if (draftEditBtn) {
     draftEditBtn.addEventListener('click', async () => {
@@ -226,12 +273,14 @@ if (draftEditBtn) {
             if (editPriorityBtn.textContent.trim() === '高') priority = 1;
             else if (editPriorityBtn.textContent.trim() === '中') priority = 2;
         }
+        const tag = editTagBtn ? editTagBtn.textContent.trim() : '就活';
         try {
             await updateDoc(doc(db, "task", currentEditingTaskId), {
                 name: newName,
                 content: newContent,
                 dueDate: newDueDate,
                 priority: priority,
+                tag: tag,
                 status: 'draft',
                 updatedAt: serverTimestamp()
             });
@@ -256,12 +305,14 @@ if (editTaskForm) {
             if (editPriorityBtn.textContent === '高') priority = 1;
             else if (editPriorityBtn.textContent === '中') priority = 2;
         }
+        const tag = editTagBtn ? editTagBtn.textContent.trim() : '就活';
         try {
             await updateDoc(doc(db, "task", currentEditingTaskId), {
                 name: newName,
                 content: newContent,
                 dueDate: newDueDate,
                 priority: priority,
+                tag: tag,
                 status: 'published',
                 updatedAt: serverTimestamp()
             });
@@ -276,7 +327,6 @@ if (editTaskForm) {
 // Priority Toggle Logic (Visual only)
 if (priorityBtn) {
     priorityBtn.addEventListener('click', () => {
-        const currentText = priorityBtn.textContent.trim();
         if (priorityBtn.textContent === '低') {
             priorityBtn.classList.remove('bg-green-500');
             priorityBtn.classList.add('bg-yellow-500');
@@ -290,6 +340,16 @@ if (priorityBtn) {
             priorityBtn.classList.add('bg-green-500');
             priorityBtn.textContent = '低';
         }
+    });
+}
+
+// タグトグル（新規タスクモーダル用）: 就活 → 学校 → その他 → 就活…
+if (tagBtn) {
+    tagBtn.addEventListener('click', () => {
+        const cur = tagBtn.textContent.trim();
+        if (cur === '就活') tagBtn.textContent = '学校';
+        else if (cur === '学校') tagBtn.textContent = 'その他';
+        else tagBtn.textContent = '就活';
     });
 }
 
@@ -307,6 +367,7 @@ if (newTaskForm) {
             if (priorityBtn.textContent.trim() === '高') priority = 1;
             else if (priorityBtn.textContent.trim() === '中') priority = 2;
         }
+        const tag = tagBtn ? tagBtn.textContent.trim() : '就活';
 
         try {
             if (!auth.currentUser) return; // Prevent adding if not logged in
@@ -316,6 +377,7 @@ if (newTaskForm) {
                 content: taskContent,
                 dueDate: taskDueDate,
                 priority: priority,
+                tag: tag,
                 status: 'published',
                 isDeleted: false,
                 isCompleted: false,
@@ -344,6 +406,7 @@ if (draftTaskBtn) {
             if (priorityBtn.textContent.trim() === '高') priority = 1;
             else if (priorityBtn.textContent.trim() === '中') priority = 2;
         }
+        const tag = tagBtn ? tagBtn.textContent.trim() : '就活';
 
         try {
             if (!auth.currentUser) return;
@@ -353,6 +416,7 @@ if (draftTaskBtn) {
                 content: taskContent,
                 dueDate: taskDueDate,
                 priority: priority,
+                tag: tag,
                 status: 'draft',
                 isDeleted: false,
                 createdAt: new Date(),
@@ -438,9 +502,10 @@ function createTaskElement(data, taskId, isCompleted, isRecent = false) {
             <span class="material-symbols-outlined ${iconClass} task-icon">crown</span>
         </div>
         <div class="flex-grow min-w-0">
-            ${data.dueDate ? `
-                <div class="text-xs text-on-surface-variant font-medium mb-0.5">
-                    ${escapeHtml(formatDueDate(data.dueDate))}
+            ${(data.dueDate || data.tag) ? `
+                <div class="text-xs text-on-surface-variant font-medium mb-0.5 flex items-center gap-1">
+                    ${data.dueDate ? `<span>${escapeHtml(formatDueDate(data.dueDate))}</span>` : ''}
+                    ${data.tag ? `<span>${escapeHtml(data.tag)}</span>` : ''}
                 </div>
             ` : ''}
             <span class="font-body-lg text-body-lg font-semibold block task-title break-all ${titleClass}" style="overflow-wrap: anywhere;">
@@ -584,14 +649,19 @@ function renderTasks(snapshot) {
     // 4. 完了済みタスクのソート：
     recentlyCompletedTasks.sort((a, b) => (a.item.data.priority || 3) - (b.item.data.priority || 3));
     
-    // 通常完了は完了した日時が新しい順（降順）、同着は優先度順
+    // 通常完了は期限日が遠い順（降順）、未設定は一番下、同着は優先度順
     oldCompletedTasks.sort((a, b) => {
-        const dateA = a.data.completedAt ? (a.data.completedAt.toDate ? a.data.completedAt.toDate().getTime() : new Date(a.data.completedAt).getTime()) : 0;
-        const dateB = b.data.completedAt ? (b.data.completedAt.toDate ? b.data.completedAt.toDate().getTime() : new Date(b.data.completedAt).getTime()) : 0;
-        
-        if (dateB !== dateA) {
-            return dateB - dateA; // 新しい順（降順）
+        const dueA = a.data.dueDate;
+        const dueB = b.data.dueDate;
+        if (dueA && dueB) {
+            const diff = dueB.localeCompare(dueA); // 降順 (dueB - dueA 相当)
+            if (diff !== 0) return diff;
+        } else if (dueA && !dueB) {
+            return -1; // dueAあり、dueBなし -> dueAが先
+        } else if (!dueA && dueB) {
+            return 1;  // dueAなし、dueBあり -> dueBが先
         }
+        // 両方なし or 両方同じ期限日の場合
         return (a.data.priority || 3) - (b.data.priority || 3);
     });
 
