@@ -41,6 +41,7 @@ const editTaskDueDateInput = document.getElementById('editTaskDueDate');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const draftSaveBtn = document.getElementById('draft-save-btn');
 const editPriorityBtn = document.getElementById('editPriorityBtn');
+const editTagBtn = document.getElementById('editTagBtn');
 
 // ============================================================
 // State
@@ -161,6 +162,10 @@ function openEditModal(taskId, taskData) {
             editPriorityBtn.textContent = '低';
         }
     }
+    // タグの初期値反映（設定されていれば既存値、なければ「就活」）
+    if (editTagBtn) {
+        editTagBtn.textContent = taskData.tag || '就活';
+    }
     editTaskModal.classList.remove('hidden');
 }
 
@@ -173,6 +178,7 @@ function closeEditModal() {
         editPriorityBtn.className = 'w-8 h-8 rounded-full bg-green-500 flex-shrink-0 transition-colors duration-300 text-[10px] font-bold text-[#FFFFFF]';
         editPriorityBtn.textContent = '低';
     }
+    if (editTagBtn) editTagBtn.textContent = '就活';
 }
 
 if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
@@ -197,6 +203,16 @@ if (editPriorityBtn) {
     });
 }
 
+// タグトグル（下書き編集モーダル用）: 就活 → 学校 → その他 → 就活…
+if (editTagBtn) {
+    editTagBtn.addEventListener('click', () => {
+        const cur = editTagBtn.textContent.trim();
+        if (cur === '就活') editTagBtn.textContent = '学校';
+        else if (cur === '学校') editTagBtn.textContent = 'その他';
+        else editTagBtn.textContent = '就活';
+    });
+}
+
 // Draft save button — update draft task without publishing
 if (draftSaveBtn) {
     draftSaveBtn.addEventListener('click', async () => {
@@ -209,12 +225,14 @@ if (draftSaveBtn) {
             if (editPriorityBtn.textContent.trim() === '高') priority = 1;
             else if (editPriorityBtn.textContent.trim() === '中') priority = 2;
         }
+        const tag = editTagBtn ? editTagBtn.textContent.trim() : '就活';
         try {
             await updateDoc(doc(db, 'task', currentEditingTaskId), {
                 name: newName,
                 content: newContent,
                 dueDate: newDueDate,
                 priority: priority,
+                tag: tag,
                 status: 'draft',
                 updatedAt: serverTimestamp()
             });
@@ -240,6 +258,7 @@ if (editTaskForm) {
             if (editPriorityBtn.textContent.trim() === '高') priority = 1;
             else if (editPriorityBtn.textContent.trim() === '中') priority = 2;
         }
+        const tag = editTagBtn ? editTagBtn.textContent.trim() : '就活';
 
         try {
             await updateDoc(doc(db, 'task', currentEditingTaskId), {
@@ -247,6 +266,7 @@ if (editTaskForm) {
                 content: newContent,
                 dueDate: newDueDate,
                 priority: priority,
+                tag: tag,
                 status: 'published',
                 updatedAt: serverTimestamp()
             });
@@ -409,9 +429,10 @@ onAuthStateChanged(auth, (user) => {
 
                 <!-- Task Title -->
                 <div class="flex-grow min-w-0">
-                    ${data.dueDate ? `
-                        <div class="text-xs text-on-surface-variant font-medium mb-0.5">
-                            ${escapeHtml(formatDueDate(data.dueDate))}
+                    ${(data.dueDate || data.tag) ? `
+                        <div class="text-xs text-on-surface-variant font-medium mb-0.5 flex items-center gap-1">
+                            ${data.dueDate ? `<span>${escapeHtml(formatDueDate(data.dueDate))}</span>` : ''}
+                            ${data.tag ? `<span>${escapeHtml(data.tag)}</span>` : ''}
                         </div>
                     ` : ''}
                     <span class="font-body-lg text-body-lg text-on-surface font-semibold block break-words">${escapeHtml(data.name || '無題のタスク')}</span>
