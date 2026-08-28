@@ -141,13 +141,37 @@
                 transform: translateY(0);
             }
         }
+
+        /* Custom Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #904d00 transparent;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #904d00;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #ff8c00;
+        }
     </style>
 </head>
 
-<body class="text-on-background min-h-screen flex flex-col relative overflow-x-hidden"
+<body class="text-on-background h-screen flex flex-col relative overflow-hidden"
     style="background: radial-gradient(circle at 15% 25%, rgba(255, 140, 0, 0.15) 0%, transparent 50%), radial-gradient(circle at 85% 75%, rgba(255, 140, 0, 0.12) 0%, transparent 60%), rgb(248, 249, 250);">
     <!-- TopAppBar -->
-    <header class="bg-surface dark:bg-background docked full-width top-0 shadow-sm z-40 relative">
+    <header class="bg-surface dark:bg-background shadow-sm z-40 flex-shrink-0">
         <div class="grid grid-cols-12 items-center px-gutter w-full h-16 max-w-container-max mx-auto">
             <div class="col-span-12 flex justify-center relative h-full items-center">
                 <span
@@ -206,24 +230,24 @@
     <div class="fixed inset-0 bg-black/20 z-40 backdrop-blur-sm transition-opacity hidden" id="nav-overlay"></div>
     <!-- Main Content Canvas -->
     <main
-        class="flex-grow w-full max-w-container-max mx-auto px-4 md:px-xl py-lg md:py-xl flex flex-col gap-md relative">
+        class="flex-1 min-h-0 w-full max-w-container-max mx-auto px-4 md:px-xl flex flex-col relative">
         <!-- Welcome / Status area -->
-        <section class="flex justify-between items-end mb-lg">
+        <section class="flex justify-between items-end pt-lg md:pt-xl pb-md flex-shrink-0">
             <div>
                 <h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-1"
                     id="encouragement-message"></h1>
             </div>
         </section>
         <!-- Task List Bento Grid Area -->
-        <section class="grid grid-cols-1 md:grid-cols-12 gap-md"><!-- Incomplete Tasks Column -->
-            <div id="task-list-container" class="md:col-span-6 flex flex-col gap-sm">
-                <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2">
+        <section class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-md pb-lg md:pb-xl"><!-- Incomplete Tasks Column -->
+            <div id="task-list-container" class="md:col-span-6 flex flex-col gap-sm overflow-y-auto overflow-x-hidden max-h-[45vh] md:max-h-none min-h-0 pr-1">
+                <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2 flex-shrink-0">
                     未完了のタスク</h2>
                 <!-- 動的に未完了タスクがここに追加されます -->
             </div>
             <!-- Completed Tasks Column -->
-            <div id="completed-task-list-container" class="md:col-span-6 flex flex-col gap-sm">
-                <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2">完了済み
+            <div id="completed-task-list-container" class="md:col-span-6 flex flex-col gap-sm overflow-y-auto overflow-x-hidden max-h-[45vh] md:max-h-none min-h-0 pr-1">
+                <h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-2 flex-shrink-0">完了済み
                 </h2>
                 <!-- 動的に完了済みタスクがここに追加されます -->
             </div>

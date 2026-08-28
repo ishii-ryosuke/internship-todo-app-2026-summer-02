@@ -467,7 +467,7 @@ async function handleDeleteTask(taskId) {
 }
 
 // タスクカード要素を作成するヘルパー関数
-function createTaskElement(data, taskId, isCompleted) {
+function createTaskElement(data, taskId, isCompleted, isRecent = false) {
     const priority = data.priority || 3;
     const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES[3];
 
@@ -478,15 +478,20 @@ function createTaskElement(data, taskId, isCompleted) {
     article.dataset.priority = priority;
     article.dataset.dueDate = data.dueDate || '';
 
-    if (isCompleted) {
-        article.className = "dynamic-task bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed hover:opacity-90 transition-colors hover:scale-[1.02] relative group w-full";
-    } else {
-        article.className = `dynamic-task ${style.bg} rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 ${style.border} hover:scale-[1.02] cursor-pointer fade-in-up task-card w-full`;
-    }
-
     if (data.createdAt) {
         const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
         article.dataset.createdAt = date.toLocaleString('ja-JP');
+    }
+
+    if (!isCompleted) {
+        // 未完了タスク：優先度別カラー
+        article.className = `dynamic-task ${style.bg} rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 ${style.border} hover:scale-[1.02] cursor-pointer fade-in-up task-card w-full`;
+    } else if (isRecent) {
+        // 最近完了（1分以内）：白色ハイライト
+        article.className = 'dynamic-task recent-completed-card bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex items-center gap-4 task-card-shadow relative group hover:opacity-90 transition-colors border-l-4 border-l-primary hover:scale-[1.02] cursor-pointer fade-in-up task-card w-full';
+    } else {
+        // 通常完了（1分以上）：グレー
+        article.className = 'dynamic-task bg-surface-container rounded-lg p-4 flex items-center gap-4 opacity-75 cursor-pointer task-card completed hover:opacity-90 transition-colors hover:scale-[1.02] relative group w-full';
     }
 
     const iconClass = isCompleted ? "text-error icon-fill" : "text-tertiary";
@@ -507,7 +512,6 @@ function createTaskElement(data, taskId, isCompleted) {
                 ${escapeHtml(data.name || '無題のタスク')}
             </span>
         </div>
-        
         <!-- Three-dot Menu Container (z-index managed) -->
         <div class="relative self-center ml-auto task-menu-container flex-shrink-0">
             <button type="button" class="task-menu-btn text-on-surface-variant hover:bg-surface-variant p-1 rounded-full transition-colors flex items-center justify-center" aria-label="タスク操作メニュー">
@@ -562,118 +566,195 @@ function createTaskElement(data, taskId, isCompleted) {
 const taskListContainer = document.getElementById('task-list-container');
 const completedTaskListContainer = document.getElementById('completed-task-list-container');
 
+// 「最近完了」タイマーを管理するMap（taskId → timeoutId）
+const recentCompletedTimers = new Map();
+
+let currentSnapshot = null;
+
+function renderTasks(snapshot) {
+    if (!taskListContainer || !completedTaskListContainer) return;
+
+    // 既存の動的タスクをクリア
+    taskListContainer.querySelectorAll('.dynamic-task').forEach(task => task.remove());
+    completedTaskListContainer.querySelectorAll('.dynamic-task').forEach(task => task.remove());
+
+    const expiredTasks = [];
+    const todayTasks = [];
+    const otherIncompleteTasks = [];
+    const recentlyCompletedTasks = []; // 1分以内
+    const oldCompletedTasks = [];      // 1分以上
+
+    const now = Date.now();
+    const ONE_MINUTE_MS = 60 * 1000;
+
+    snapshot.forEach((taskDoc) => {
+        const data = taskDoc.data();
+        const taskId = taskDoc.id;
+
+        // ゴミ箱に入っているタスク（isDeleted: true）および下書き（status: 'draft'）は除外
+        if (data.isDeleted === true || data.status === 'draft') return;
+
+        const isCompleted = data.isCompleted || false;
+        const item = { taskDoc, data, taskId };
+
+        if (!isCompleted) {
+            const status = getDueDateStatus(data.dueDate);
+            if (status === 'expired') {
+                expiredTasks.push(item);
+            } else if (status === 'today') {
+                todayTasks.push(item);
+            } else {
+                otherIncompleteTasks.push(item);
+            }
+        } else {
+            // completedAt の経過時間を判定
+            let completedMs = null;
+            if (data.completedAt) {
+                const completedDate = data.completedAt.toDate ? data.completedAt.toDate() : new Date(data.completedAt);
+                completedMs = now - completedDate.getTime();
+            }
+            if (completedMs !== null && completedMs < ONE_MINUTE_MS) {
+                recentlyCompletedTasks.push({ item, remainingMs: ONE_MINUTE_MS - completedMs });
+            } else {
+                oldCompletedTasks.push(item);
+            }
+        }
+    });
+
+    // 1. 期限切れタスクのソート：期限が古い順 → 優先度順（1→2→3）
+    expiredTasks.sort((a, b) => {
+        const dateDiff = (a.data.dueDate || '').localeCompare(b.data.dueDate || '');
+        if (dateDiff !== 0) return dateDiff;
+        return (a.data.priority || 3) - (b.data.priority || 3);
+    });
+
+    // 2. 今日が期限のタスクのソート：優先度順（1→2→3）
+    todayTasks.sort((a, b) => (a.data.priority || 3) - (b.data.priority || 3));
+
+    // 3. その他未完了タスクのソート：期限が近い順（未設定は末尾） → 優先度順（1→2→3）
+    otherIncompleteTasks.sort((a, b) => {
+        const dueA = a.data.dueDate;
+        const dueB = b.data.dueDate;
+        if (dueA && dueB) {
+            const diff = dueA.localeCompare(dueB);
+            if (diff !== 0) return diff;
+        } else if (dueA && !dueB) {
+            return -1;
+        } else if (!dueA && dueB) {
+            return 1;
+        }
+        return (a.data.priority || 3) - (b.data.priority || 3);
+    });
+
+    // 4. 完了済みタスクのソート：
+    recentlyCompletedTasks.sort((a, b) => (a.item.data.priority || 3) - (b.item.data.priority || 3));
+    
+    // 通常完了は期限日が遠い順（降順）、未設定は一番下、同着は優先度順
+    oldCompletedTasks.sort((a, b) => {
+        const dueA = a.data.dueDate;
+        const dueB = b.data.dueDate;
+        if (dueA && dueB) {
+            const diff = dueB.localeCompare(dueA); // 降順 (dueB - dueA 相当)
+            if (diff !== 0) return diff;
+        } else if (dueA && !dueB) {
+            return -1; // dueAあり、dueBなし -> dueAが先
+        } else if (!dueA && dueB) {
+            return 1;  // dueAなし、dueBあり -> dueBが先
+        }
+        // 両方なし or 両方同じ期限日の場合
+        return (a.data.priority || 3) - (b.data.priority || 3);
+    });
+
+    // --- レンダリング：未完了タスク ---
+    // ① 期限切れタスクの描画（赤色に塗りつぶした赤枠コンテナでグルーピング）
+    if (expiredTasks.length > 0) {
+        const expiredContainer = document.createElement('div');
+        expiredContainer.className = "border-2 border-error rounded-xl p-3 bg-error-container flex flex-col gap-sm dynamic-task shadow-md";
+        expiredContainer.innerHTML = `
+            <div class="flex items-center gap-1.5 text-on-error-container font-headline-md text-sm font-bold px-1">
+                <span class="material-symbols-outlined text-[18px] text-error">warning</span>
+                <span>期限切れのタスク</span>
+            </div>
+        `;
+        expiredTasks.forEach(({ data, taskId }) => {
+            const el = createTaskElement(data, taskId, false);
+            expiredContainer.appendChild(el);
+        });
+        taskListContainer.appendChild(expiredContainer);
+    }
+
+    // ② 今日が期限のタスク（赤枠コンテナでグルーピング）
+    if (todayTasks.length > 0) {
+        const todayContainer = document.createElement('div');
+        todayContainer.className = "border-2 border-error rounded-xl p-3 bg-error-container/10 flex flex-col gap-sm dynamic-task shadow-sm";
+        todayContainer.innerHTML = `
+            <div class="flex items-center gap-1.5 text-error font-label-bold text-sm px-1">
+                <span class="material-symbols-outlined text-[18px]">event_upcoming</span>
+                <span>今日が期限のタスク</span>
+            </div>
+        `;
+        todayTasks.forEach(({ data, taskId }) => {
+            const el = createTaskElement(data, taskId, false);
+            todayContainer.appendChild(el);
+        });
+        taskListContainer.appendChild(todayContainer);
+    }
+
+    // ③ その他の未完了タスク
+    otherIncompleteTasks.forEach(({ data, taskId }) => {
+        const el = createTaskElement(data, taskId, false);
+        taskListContainer.appendChild(el);
+    });
+
+    // ===== 完了済みエリアのレンダリング =====
+
+    // 「最近完了」セクション（1分以内）
+    if (recentlyCompletedTasks.length > 0) {
+        const recentSection = document.createElement('div');
+        recentSection.className = 'dynamic-task recent-completed-section mb-2';
+        recentSection.innerHTML = `<span class="text-xs font-bold text-on-surface uppercase tracking-widest flex items-center gap-1 mb-2"><span class="text-base">🎉</span> たった今完了！</span>`;
+        completedTaskListContainer.appendChild(recentSection);
+
+        recentlyCompletedTasks.forEach(({ item, remainingMs }) => {
+            const article = createTaskElement(item.data, item.taskId, true, true);
+            completedTaskListContainer.appendChild(article);
+
+            // 残り時間後に自動でDOM更新（renderTasksを再トリガー）
+            const taskId = item.taskId;
+            if (recentCompletedTimers.has(taskId)) {
+                clearTimeout(recentCompletedTimers.get(taskId));
+            }
+            const timerId = setTimeout(() => {
+                recentCompletedTimers.delete(taskId);
+                if (currentSnapshot) {
+                    renderTasks(currentSnapshot);
+                }
+            }, remainingMs + 100);
+            recentCompletedTimers.set(taskId, timerId);
+        });
+
+        // 区切り線
+        if (oldCompletedTasks.length > 0) {
+            const divider = document.createElement('div');
+            divider.className = 'dynamic-task border-t border-outline-variant/40 my-3';
+            completedTaskListContainer.appendChild(divider);
+        }
+    }
+
+    // 通常完了タスク（1分以上経過）
+    oldCompletedTasks.forEach(({ data, taskId }) => {
+        const article = createTaskElement(data, taskId, true, false);
+        completedTaskListContainer.appendChild(article);
+    });
+}
+
 if (taskListContainer && completedTaskListContainer) {
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const q = query(collection(db, "task"), where("userId", "==", user.uid));
             onSnapshot(q, (snapshot) => {
-                // 既存の動的タスクをクリア
-                taskListContainer.querySelectorAll('.dynamic-task').forEach(task => task.remove());
-                completedTaskListContainer.querySelectorAll('.dynamic-task').forEach(task => task.remove());
-
-                const expiredTasks = [];
-                const todayTasks = [];
-                const otherIncompleteTasks = [];
-                const completedTasks = [];
-
-                snapshot.forEach((taskDoc) => {
-                    const data = taskDoc.data();
-                    const taskId = taskDoc.id;
-
-                    // ゴミ箱に入っているタスク（isDeleted: true）および下書き（status: 'draft'）は除外
-                    if (data.isDeleted === true || data.status === 'draft') return;
-
-                    const isCompleted = data.isCompleted || false;
-                    const item = { taskDoc, data, taskId };
-
-                    if (isCompleted) {
-                        completedTasks.push(item);
-                    } else {
-                        const status = getDueDateStatus(data.dueDate);
-                        if (status === 'expired') {
-                            expiredTasks.push(item);
-                        } else if (status === 'today') {
-                            todayTasks.push(item);
-                        } else {
-                            otherIncompleteTasks.push(item);
-                        }
-                    }
-                });
-
-                // 1. 期限切れタスクのソート：期限が古い順 → 優先度順（1→2→3）
-                expiredTasks.sort((a, b) => {
-                    const dateDiff = (a.data.dueDate || '').localeCompare(b.data.dueDate || '');
-                    if (dateDiff !== 0) return dateDiff;
-                    return (a.data.priority || 3) - (b.data.priority || 3);
-                });
-
-                // 2. 今日が期限のタスクのソート：優先度順（1→2→3）
-                todayTasks.sort((a, b) => (a.data.priority || 3) - (b.data.priority || 3));
-
-                // 3. その他未完了タスクのソート：期限が近い順（未設定は末尾） → 優先度順（1→2→3）
-                otherIncompleteTasks.sort((a, b) => {
-                    const dueA = a.data.dueDate;
-                    const dueB = b.data.dueDate;
-                    if (dueA && dueB) {
-                        const diff = dueA.localeCompare(dueB);
-                        if (diff !== 0) return diff;
-                    } else if (dueA && !dueB) {
-                        return -1;
-                    } else if (!dueA && dueB) {
-                        return 1;
-                    }
-                    return (a.data.priority || 3) - (b.data.priority || 3);
-                });
-
-                // 4. 完了済みタスクのソート：優先度順（1→2→3）
-                completedTasks.sort((a, b) => (a.data.priority || 3) - (b.data.priority || 3));
-
-                // --- レンダリング：未完了タスク ---
-                // ① 期限切れタスクの描画（赤色に塗りつぶした赤枠コンテナでグルーピング）
-                if (expiredTasks.length > 0) {
-                    const expiredContainer = document.createElement('div');
-                    expiredContainer.className = "border-2 border-error rounded-xl p-3 bg-error-container flex flex-col gap-sm dynamic-task shadow-md";
-                    expiredContainer.innerHTML = `
-                        <div class="flex items-center gap-1.5 text-on-error-container font-headline-md text-sm font-bold px-1">
-                            <span class="material-symbols-outlined text-[18px] text-error">warning</span>
-                            <span>期限切れのタスク</span>
-                        </div>
-                    `;
-                    expiredTasks.forEach(({ data, taskId }) => {
-                        const el = createTaskElement(data, taskId, false);
-                        expiredContainer.appendChild(el);
-                    });
-                    taskListContainer.appendChild(expiredContainer);
-                }
-
-                // ② 今日が期限のタスク（赤枠コンテナでグルーピング）
-                if (todayTasks.length > 0) {
-                    const todayContainer = document.createElement('div');
-                    todayContainer.className = "border-2 border-error rounded-xl p-3 bg-error-container/10 flex flex-col gap-sm dynamic-task shadow-sm";
-                    todayContainer.innerHTML = `
-                        <div class="flex items-center gap-1.5 text-error font-label-bold text-sm px-1">
-                            <span class="material-symbols-outlined text-[18px]">event_upcoming</span>
-                            <span>今日が期限のタスク</span>
-                        </div>
-                    `;
-                    todayTasks.forEach(({ data, taskId }) => {
-                        const el = createTaskElement(data, taskId, false);
-                        todayContainer.appendChild(el);
-                    });
-                    taskListContainer.appendChild(todayContainer);
-                }
-
-                // ③ その他の未完了タスク
-                otherIncompleteTasks.forEach(({ data, taskId }) => {
-                    const el = createTaskElement(data, taskId, false);
-                    taskListContainer.appendChild(el);
-                });
-
-                // --- レンダリング：完了済みタスク ---
-                completedTasks.forEach(({ data, taskId }) => {
-                    const el = createTaskElement(data, taskId, true);
-                    completedTaskListContainer.appendChild(el);
-                });
+                currentSnapshot = snapshot;
+                renderTasks(snapshot);
             });
         }
     });
@@ -744,7 +825,8 @@ document.addEventListener('click', async (e) => {
                 try {
                     // Firestoreのデータを更新（リアルタイムリスナーが反応して自動で移動します）
                     await updateDoc(doc(db, "task", taskId), {
-                        isCompleted: !isCompleted
+                        isCompleted: !isCompleted,
+                        completedAt: !isCompleted ? serverTimestamp() : null
                     });
                 } catch (error) {
                     console.error("Error updating task status:", error);
