@@ -19,7 +19,33 @@ import {
 onAuthStateChanged(auth, (user) => {
     if (!user) {
         window.location.href = 'index.html';
+        return;
     }
+
+    const headerIcon = document.getElementById('header-user-icon');
+    const sidebarIcon = document.getElementById('sidebar-user-icon');
+    const sidebarUserName = document.getElementById('sidebar-user-name');
+    const fallbackSvg = `<svg class="w-3/4 h-3/4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+
+    // Listen to real-time updates of the user document in the "users" collection
+    onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+        let iconContent = fallbackSvg;
+        let displayName = '';
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const name = data.name;
+            if (name && name.trim() !== '') {
+                iconContent = Array.from(name.trim())[0];
+                displayName = name;
+            }
+        }
+
+        if (headerIcon) headerIcon.innerHTML = iconContent;
+        if (sidebarIcon) sidebarIcon.innerHTML = iconContent;
+        if (sidebarUserName) sidebarUserName.textContent = displayName;
+    }, (error) => {
+        console.error("Error fetching user data: ", error);
+    });
 });
 
 // XSS対策用HTMLエスケープ関数
